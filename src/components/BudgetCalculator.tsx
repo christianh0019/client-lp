@@ -662,51 +662,58 @@ export const BudgetCalculator: React.FC = () => {
                                             </div>
                                         </div>
 
-                                        <div className="bg-blue-50/50 p-6 rounded-2xl mb-6">
-                                            <p className="text-sm text-zinc-700 leading-relaxed font-medium">
-                                                {generatedReport.closing}
-                                            </p>
-                                        </div>
-
-                                        {!showBooking ? (
-                                            <button
-                                                onClick={() => setShowBooking(true)}
-                                                className={`w-full py-4 rounded-xl font-bold text-white shadow-lg flex items-center justify-center gap-2 transition-transform hover:scale-[1.02] active:scale-[0.98] ${generatedReport.urgency === 'high'
-                                                    ? 'bg-gradient-to-r from-orange-500 to-red-600 shadow-orange-500/30'
-                                                    : 'bg-slate-900 hover:bg-slate-800 shadow-slate-900/20'
-                                                    }`}
-                                            >
-                                                {generatedReport.cta.text} <ArrowRight size={18} />
-                                            </button>
-                                        ) : (
-                                            <motion.div
-                                                initial={{ opacity: 0, height: 0 }}
-                                                animate={{ opacity: 1, height: 'auto' }}
-                                                className="bg-zinc-50 rounded-2xl p-4 border border-zinc-200 overflow-hidden"
-                                            >
-                                                <div className="text-center mb-4 space-y-2">
-                                                    <div className="inline-flex items-center justify-center p-2 bg-green-100 text-green-700 rounded-full mb-2">
-                                                        <CheckCircle size={20} />
-                                                    </div>
-                                                    <h4 className="font-serif text-lg font-bold text-slate-900">Great! Here's our live calendar.</h4>
-                                                    <p className="text-sm text-zinc-600">
-                                                        Select a time below to book your free call to discuss <strong>{generatedReport.bookingTopic}</strong>.
+                                        {!showBooking && (
+                                            <>
+                                                <div className="bg-blue-50/50 p-6 rounded-2xl mb-6">
+                                                    <p className="text-sm text-zinc-700 leading-relaxed font-medium">
+                                                        {generatedReport.closing}
                                                     </p>
                                                 </div>
-                                                <div className="w-full relative min-h-[600px] bg-white rounded-xl shadow-sm border border-zinc-100">
-                                                    <iframe
-                                                        src="https://api.leadconnectorhq.com/widget/booking/xPaYSZulboJxxCpHa9dY"
-                                                        style={{ width: '100%', border: 'none', minHeight: '600px', overflow: 'auto' }}
-                                                        scrolling="yes"
-                                                        id="EQQGeUU49pxoPjjuBmng_1767472093119"
-                                                    />
-                                                </div>
-                                                <script src="https://link.msgsndr.com/js/form_embed.js" type="text/javascript"></script>
-                                            </motion.div>
-                                        )}
 
+                                                <button
+                                                    onClick={() => setShowBooking(true)}
+                                                    className={`w-full py-4 rounded-xl font-bold text-white shadow-lg flex items-center justify-center gap-2 transition-transform hover:scale-[1.02] active:scale-[0.98] ${generatedReport.urgency === 'high'
+                                                        ? 'bg-gradient-to-r from-orange-500 to-red-600 shadow-orange-500/30'
+                                                        : 'bg-slate-900 hover:bg-slate-800 shadow-slate-900/20'
+                                                        }`}
+                                                >
+                                                    {generatedReport.cta.text} <ArrowRight size={18} />
+                                                </button>
+                                            </>
+                                        )}
                                     </motion.div>
                                 ) : null}
+                            </AnimatePresence>
+
+                            {/* Booking Widget (Outside Report Card) */}
+                            <AnimatePresence>
+                                {showBooking && generatedReport && (
+                                    <motion.div
+                                        initial={{ opacity: 0, scale: 0.95, y: 20 }}
+                                        animate={{ opacity: 1, scale: 1, y: 0 }}
+                                        exit={{ opacity: 0, scale: 0.95, y: 20 }}
+                                        className="bg-white rounded-3xl border border-zinc-200 shadow-xl overflow-hidden mt-6"
+                                    >
+                                        <div className="bg-zinc-50 p-8 text-center border-b border-zinc-100">
+                                            <div className="inline-flex items-center justify-center p-3 bg-green-100 text-green-700 rounded-full mb-4 shadow-sm">
+                                                <CheckCircle size={24} />
+                                            </div>
+                                            <h4 className="font-serif text-2xl font-bold text-slate-900 mb-2">Great! Here's our live calendar.</h4>
+                                            <p className="text-zinc-600 max-w-md mx-auto">
+                                                Select a time below to book your free call to discuss <strong>{generatedReport.bookingTopic}</strong>.
+                                            </p>
+                                        </div>
+                                        <div className="w-full relative min-h-[700px]">
+                                            <iframe
+                                                src="https://api.leadconnectorhq.com/widget/booking/xPaYSZulboJxxCpHa9dY"
+                                                style={{ width: '100%', border: 'none', minHeight: '700px', overflow: 'hidden' }}
+                                                scrolling="yes"
+                                                id="EQQGeUU49pxoPjjuBmng_1767472093119"
+                                            />
+                                        </div>
+                                        <script src="https://link.msgsndr.com/js/form_embed.js" type="text/javascript"></script>
+                                    </motion.div>
+                                )}
                             </AnimatePresence>
                         </>
                     ) : (
