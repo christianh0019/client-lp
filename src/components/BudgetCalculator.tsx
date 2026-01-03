@@ -1,8 +1,9 @@
 import React, { useState, useEffect } from 'react';
 import { LocationCostService, type MarketData } from '../services/LocationCostService';
 import { calculateBudgetBreakdown, getFeasibilityStatus as checkFeasibility } from '../services/BudgetLogic';
-import { MapPin, CheckCircle, AlertTriangle, ArrowRight, Layers, DollarSign, Loader2, X, Lock } from 'lucide-react';
+import { MapPin, CheckCircle, AlertTriangle, ArrowRight, Layers, DollarSign, Loader2, X, Lock, HelpCircle, Clock } from 'lucide-react';
 import { AnimatePresence, motion } from 'framer-motion';
+import { ARTICLES, type Article } from '../data/knowledgeBaseData';
 
 export const BudgetCalculator: React.FC = () => {
     // Local State (replaced Contexts)
@@ -28,6 +29,9 @@ export const BudgetCalculator: React.FC = () => {
     const [showModal, setShowModal] = useState(false);
     const [validationError, setValidationError] = useState('');
     const [modalError, setModalError] = useState('');
+
+    // Educational Modal State
+    const [viewingArticle, setViewingArticle] = useState<Article | null>(null);
 
     // Calculate Breakdown
     const breakdown = calculateBudgetBreakdown(totalBudget, !hasLand ? landCost : 0, targetSqFt, includeSoftCosts);
@@ -137,6 +141,55 @@ export const BudgetCalculator: React.FC = () => {
     return (
         <div className="p-4 md:p-8 max-w-7xl mx-auto w-full text-zinc-900 pb-32 relative">
 
+            {/* Article Modal Overlay */}
+            <AnimatePresence>
+                {viewingArticle && (
+                    <div className="fixed inset-0 z-[150] flex items-center justify-center p-4 md:p-8">
+                        <motion.div
+                            initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}
+                            className="absolute inset-0 bg-black/80 backdrop-blur-sm"
+                            onClick={() => setViewingArticle(null)}
+                        />
+                        <motion.div
+                            initial={{ opacity: 0, scale: 0.95, y: 20 }}
+                            animate={{ opacity: 1, scale: 1, y: 0 }}
+                            exit={{ opacity: 0, scale: 0.95, y: 20 }}
+                            className="bg-[#111] border border-white/10 w-full max-w-2xl max-h-[90vh] overflow-y-auto rounded-3xl relative z-60 shadow-2xl flex flex-col"
+                        >
+                            <div className={`h-32 bg-gradient-to-r ${viewingArticle.gradient} shrink-0 relative flex items-center px-8`}>
+                                <button
+                                    onClick={() => setViewingArticle(null)}
+                                    className="absolute top-4 right-4 p-2 bg-black/20 rounded-full hover:bg-black/40 text-white transition-colors"
+                                >
+                                    <X size={18} />
+                                </button>
+                                <viewingArticle.icon size={64} className="text-white/20 absolute right-8" />
+                                <div>
+                                    <span className="text-[10px] uppercase tracking-widest text-white/60 bg-black/20 px-2 py-1 rounded-full mb-2 inline-block leading-none">
+                                        {viewingArticle.category}
+                                    </span>
+                                    <h2 className="text-2xl font-serif text-white">{viewingArticle.title}</h2>
+                                </div>
+                            </div>
+                            <div className="p-8">
+                                <div className="flex items-center gap-2 text-xs text-zinc-500 mb-6 uppercase tracking-widest">
+                                    <Clock size={12} /> {viewingArticle.readTime}
+                                </div>
+                                <div className="prose prose-invert prose-sm text-zinc-300">
+                                    {viewingArticle.content}
+                                </div>
+                                <button
+                                    onClick={() => setViewingArticle(null)}
+                                    className="mt-8 w-full py-3 bg-white/5 hover:bg-white/10 border border-white/10 rounded-xl text-sm font-medium transition-colors"
+                                >
+                                    Close Guide
+                                </button>
+                            </div>
+                        </motion.div>
+                    </div>
+                )}
+            </AnimatePresence>
+
             {/* Header */}
             <div className="flex flex-col md:flex-row md:items-end justify-between mb-8 gap-6 animate-fadeIn">
                 <div className="space-y-3">
@@ -242,6 +295,9 @@ export const BudgetCalculator: React.FC = () => {
                                 <div className="flex items-center gap-2">
                                     <Layers size={14} className="text-zinc-500" />
                                     <span className="text-xs uppercase tracking-widest text-zinc-900">Land Status</span>
+                                    <button onClick={() => setViewingArticle(ARTICLES.find(a => a.id === 10) || null)} className="text-blue-400/80 hover:text-blue-500 transition-colors p-1 hover:bg-zinc-100 rounded-full">
+                                        <HelpCircle size={14} />
+                                    </button>
                                 </div>
                                 <div className="flex gap-2 mb-4 bg-zinc-100 p-1 rounded-lg w-fit">
                                     <button onClick={() => { setHasLand(true); setIsCalculated(false); }} className={`px-3 py-1.5 text-xs rounded-md transition-all ${hasLand ? 'bg-white text-zinc-900 shadow-sm font-bold' : 'text-zinc-500 hover:text-zinc-900'}`}>
@@ -289,6 +345,12 @@ export const BudgetCalculator: React.FC = () => {
                                     <span className="text-xs font-medium text-zinc-900">Include Soft Costs?</span>
                                     <div className="flex items-center gap-2">
                                         <span className="text-[10px] text-zinc-500">Permits, Design, Engineering (~20%)</span>
+                                        <button
+                                            onClick={(e) => { e.stopPropagation(); setViewingArticle(ARTICLES.find(a => a.id === 9) || null); }}
+                                            className="text-blue-400/80 hover:text-blue-500 transition-colors p-1 hover:bg-zinc-100 rounded-full"
+                                        >
+                                            <HelpCircle size={14} />
+                                        </button>
                                     </div>
                                 </div>
                             </div>
@@ -299,6 +361,9 @@ export const BudgetCalculator: React.FC = () => {
                             <div className="flex justify-between items-center">
                                 <div className="flex items-center gap-2">
                                     <label className="text-xs uppercase tracking-widest text-zinc-500">Target Home Size</label>
+                                    <button onClick={() => setViewingArticle(ARTICLES.find(a => a.id === 12) || null)} className="text-blue-400/80 hover:text-blue-500 transition-colors p-1 hover:bg-zinc-100 rounded-full">
+                                        <HelpCircle size={14} />
+                                    </button>
                                 </div>
                                 <span className="text-xl font-serif text-zinc-900 font-bold">{targetSqFt.toLocaleString()} sq ft</span>
                             </div>
@@ -406,6 +471,9 @@ export const BudgetCalculator: React.FC = () => {
                                         <div className="mb-6 relative pointer-events-auto">
                                             <div className="flex items-center justify-center gap-2 mb-2">
                                                 <span className="text-[10px] uppercase tracking-[0.3em] text-zinc-500">Construction Power</span>
+                                                <button onClick={() => setViewingArticle(ARTICLES.find(a => a.id === 11) || null)} className="text-blue-400/80 hover:text-blue-500 transition-colors p-1 hover:bg-zinc-100 rounded-full">
+                                                    <HelpCircle size={16} />
+                                                </button>
                                             </div>
                                             <h2 className={`text-6xl font-bold mt-2 ${feasibility.color} transition-colors duration-500`}>
                                                 ${Math.round(breakdown.hardCostPerSqFt)}
