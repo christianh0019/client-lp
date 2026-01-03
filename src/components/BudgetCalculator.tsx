@@ -319,175 +319,198 @@ export const BudgetCalculator: React.FC = () => {
 
                     {/* 2. Project Inputs */}
                     <div className="space-y-8">
-                        {/* Total Budget */}
-                        <div className="space-y-4">
-                            <div className="flex justify-between items-center">
-                                <div className="flex flex-col gap-1">
-                                    <div className="flex items-center gap-2">
-                                        <label className="text-xs uppercase tracking-widest text-zinc-900 font-bold">
-                                            {hasLand ? 'Construction Budget' : 'All-In Budget'}
-                                        </label>
-                                        <button onClick={() => setViewingArticle(ARTICLES.find(a => a.id === 13) || null)} className="text-blue-400/80 hover:text-blue-500 transition-colors p-1 hover:bg-zinc-100 rounded-full">
-                                            <HelpCircle size={14} />
-                                        </button>
-                                    </div>
-                                    <p className="text-[10px] text-zinc-400">
-                                        {hasLand
-                                            ? 'Your max spending limit for the build (excluding land value).'
-                                            : 'Your total spending limit including land, home, and fees.'}
-                                    </p>
-                                </div>
-                                <span className="text-xl font-serif text-zinc-900 font-bold">{formatCurrency(totalBudget)}</span>
-                            </div>
-                            <input
-                                type="range"
-                                min={300000} max={5000000} step={10000}
-                                value={totalBudget}
-                                onChange={(e) => { setTotalBudget(Number(e.target.value)); setIsCalculated(false); }}
-                                className="w-full h-2 bg-zinc-200 rounded-lg appearance-none cursor-pointer accent-slate-900"
-                            />
-                        </div>
 
-                        {/* Land Logic */}
-                        <div className="bg-white border border-zinc-200 rounded-xl p-4 space-y-4 shadow-sm">
-                            <div className="flex items-center justify-between">
-                                <div className="flex items-center gap-2">
-                                    <Layers size={14} className="text-zinc-500" />
-                                    <span className="text-xs uppercase tracking-widest text-zinc-900">Land Status</span>
-                                    <button onClick={() => setViewingArticle(ARTICLES.find(a => a.id === 10) || null)} className="text-blue-400/80 hover:text-blue-500 transition-colors p-1 hover:bg-zinc-100 rounded-full">
-                                        <HelpCircle size={14} />
-                                    </button>
-                                </div>
-                                <div className="flex gap-2 mb-4 bg-zinc-100 p-1 rounded-lg w-fit">
-                                    <button onClick={() => { setHasLand(true); setIsCalculated(false); }} className={`px-3 py-1.5 text-xs rounded-md transition-all ${hasLand === true ? 'bg-white text-zinc-900 shadow-sm font-bold' : 'text-zinc-500 hover:text-zinc-900'}`}>
-                                        I have land
-                                    </button>
-                                    <button onClick={() => { setHasLand(false); setIsCalculated(false); }} className={`px-3 py-1.5 text-xs rounded-md transition-all ${hasLand === false ? 'bg-white text-zinc-900 shadow-sm font-bold' : 'text-zinc-500 hover:text-zinc-900'}`}>
-                                        I need land
-                                    </button>
-                                </div>
-                            </div>
-
-                            <AnimatePresence>
-                                {hasLand === false && (
-                                    <motion.div
-                                        initial={{ height: 0, opacity: 0 }}
-                                        animate={{ height: 'auto', opacity: 1 }}
-                                        exit={{ height: 0, opacity: 0 }}
-                                        className="overflow-hidden"
-                                    >
-                                        <div className="space-y-2">
-                                            <div className="flex justify-between text-sm">
-                                                <span className="text-zinc-500">Estimated Land Cost</span>
-                                                <span className="font-mono text-zinc-900 font-bold">{formatCurrency(landCost)}</span>
+                        {/* Land Logic - Step 1 (Revealed after city) */}
+                        <AnimatePresence>
+                            {!!city && (
+                                <motion.div
+                                    initial={{ opacity: 0, height: 0 }}
+                                    animate={{ opacity: 1, height: 'auto' }}
+                                    exit={{ opacity: 0, height: 0 }}
+                                    className="overflow-hidden"
+                                >
+                                    <div className="bg-white border border-zinc-200 rounded-xl p-4 space-y-4 shadow-sm mb-8">
+                                        <div className="flex items-center justify-between">
+                                            <div className="flex items-center gap-2">
+                                                <Layers size={14} className="text-zinc-500" />
+                                                <span className="text-xs uppercase tracking-widest text-zinc-900">Land Status</span>
+                                                <button onClick={() => setViewingArticle(ARTICLES.find(a => a.id === 10) || null)} className="text-blue-400/80 hover:text-blue-500 transition-colors p-1 hover:bg-zinc-100 rounded-full">
+                                                    <HelpCircle size={14} />
+                                                </button>
                                             </div>
-                                            <input
-                                                type="range"
-                                                min={0} max={1000000} step={5000}
-                                                value={landCost}
-                                                onChange={(e) => { setLandCost(Number(e.target.value)); setIsCalculated(false); }}
-                                                className="w-full h-2 bg-zinc-100 rounded-lg appearance-none cursor-pointer accent-slate-600"
-                                            />
+                                            <div className="flex gap-2 mb-4 bg-zinc-100 p-1 rounded-lg w-fit">
+                                                <button onClick={() => { setHasLand(true); setIsCalculated(false); }} className={`px-3 py-1.5 text-xs rounded-md transition-all ${hasLand === true ? 'bg-white text-zinc-900 shadow-sm font-bold' : 'text-zinc-500 hover:text-zinc-900'}`}>
+                                                    I have land
+                                                </button>
+                                                <button onClick={() => { setHasLand(false); setIsCalculated(false); }} className={`px-3 py-1.5 text-xs rounded-md transition-all ${hasLand === false ? 'bg-white text-zinc-900 shadow-sm font-bold' : 'text-zinc-500 hover:text-zinc-900'}`}>
+                                                    I need land
+                                                </button>
+                                            </div>
                                         </div>
-                                    </motion.div>
-                                )}
-                            </AnimatePresence>
-                        </div>
 
-                        {/* Soft Cost Logic */}
-                        <div className="bg-white border border-zinc-200 rounded-xl p-4 space-y-4 shadow-sm">
-                            <div className="flex items-center gap-2 mb-2">
-                                <span className="text-xs uppercase tracking-widest text-zinc-900 font-bold">Soft Cost Breakdown</span>
-                            </div>
+                                        <AnimatePresence>
+                                            {hasLand === false && (
+                                                <motion.div
+                                                    initial={{ height: 0, opacity: 0 }}
+                                                    animate={{ height: 'auto', opacity: 1 }}
+                                                    exit={{ height: 0, opacity: 0 }}
+                                                    className="overflow-hidden"
+                                                >
+                                                    <div className="space-y-2">
+                                                        <div className="flex justify-between text-sm">
+                                                            <span className="text-zinc-500">Estimated Land Cost</span>
+                                                            <span className="font-mono text-zinc-900 font-bold">{formatCurrency(landCost)}</span>
+                                                        </div>
+                                                        <input
+                                                            type="range"
+                                                            min={0} max={1000000} step={5000}
+                                                            value={landCost}
+                                                            onChange={(e) => { setLandCost(Number(e.target.value)); setIsCalculated(false); }}
+                                                            className="w-full h-2 bg-zinc-100 rounded-lg appearance-none cursor-pointer accent-slate-600"
+                                                        />
+                                                    </div>
+                                                </motion.div>
+                                            )}
+                                        </AnimatePresence>
+                                    </div>
+                                </motion.div>
+                            )}
+                        </AnimatePresence>
 
-                            {/* Question 1: Plans */}
-                            <div className="flex justify-between items-center py-2 border-b border-zinc-100 last:border-0">
-                                <div className="flex items-center gap-2">
-                                    <span className="text-xs text-zinc-600">Do You Have Design Plans?</span>
-                                    <button onClick={() => setViewingArticle(ARTICLES.find(a => a.id === 14) || null)} className="text-blue-400/80 hover:text-blue-500 transition-colors p-1 hover:bg-zinc-100 rounded-full">
-                                        <HelpCircle size={14} />
-                                    </button>
-                                </div>
-                                <div className="flex gap-2">
-                                    <button onClick={() => { setHasPlans(true); setIsCalculated(false); }} className={`px-3 py-1 text-[10px] font-bold rounded-md transition-all ${hasPlans ? 'bg-slate-900 text-white' : 'bg-zinc-100 text-zinc-500 hover:bg-zinc-200'}`}>Yes</button>
-                                    <button onClick={() => { setHasPlans(false); setIsCalculated(false); }} className={`px-3 py-1 text-[10px] font-bold rounded-md transition-all ${!hasPlans ? 'bg-slate-900 text-white' : 'bg-zinc-100 text-zinc-500 hover:bg-zinc-200'}`}>No</button>
-                                </div>
-                            </div>
+                        {/* Soft Cost Logic - Step 2 (Revealed after Land) */}
+                        <AnimatePresence>
+                            {hasLand !== null && (
+                                <motion.div
+                                    initial={{ opacity: 0, height: 0 }}
+                                    animate={{ opacity: 1, height: 'auto' }}
+                                    exit={{ opacity: 0, height: 0 }}
+                                    className="overflow-hidden space-y-8"
+                                >
+                                    <div className="bg-white border border-zinc-200 rounded-xl p-4 space-y-4 shadow-sm">
+                                        <div className="flex items-center gap-2 mb-2">
+                                            <span className="text-xs uppercase tracking-widest text-zinc-900 font-bold">Soft Cost Breakdown</span>
+                                        </div>
 
-                            {/* Question 2: Engineering (Only if they have plans) */}
-                            <AnimatePresence>
-                                {hasPlans && (
-                                    <motion.div
-                                        initial={{ height: 0, opacity: 0 }}
-                                        animate={{ height: 'auto', opacity: 1 }}
-                                        exit={{ height: 0, opacity: 0 }}
-                                        className="overflow-hidden"
-                                    >
+                                        {/* Question 1: Plans */}
                                         <div className="flex justify-between items-center py-2 border-b border-zinc-100 last:border-0">
                                             <div className="flex items-center gap-2">
-                                                <span className="text-xs text-zinc-600">Are your plans engineered?</span>
-                                                <button onClick={() => setViewingArticle(ARTICLES.find(a => a.id === 15) || null)} className="text-blue-400/80 hover:text-blue-500 transition-colors p-1 hover:bg-zinc-100 rounded-full">
+                                                <span className="text-xs text-zinc-600">Do You Have Design Plans?</span>
+                                                <button onClick={() => setViewingArticle(ARTICLES.find(a => a.id === 14) || null)} className="text-blue-400/80 hover:text-blue-500 transition-colors p-1 hover:bg-zinc-100 rounded-full">
                                                     <HelpCircle size={14} />
                                                 </button>
                                             </div>
                                             <div className="flex gap-2">
-                                                <button onClick={() => { setHasEngineering(true); setIsCalculated(false); }} className={`px-3 py-1 text-[10px] font-bold rounded-md transition-all ${hasEngineering ? 'bg-slate-900 text-white' : 'bg-zinc-100 text-zinc-500 hover:bg-zinc-200'}`}>Yes</button>
-                                                <button onClick={() => { setHasEngineering(false); setIsCalculated(false); }} className={`px-3 py-1 text-[10px] font-bold rounded-md transition-all ${!hasEngineering ? 'bg-slate-900 text-white' : 'bg-zinc-100 text-zinc-500 hover:bg-zinc-200'}`}>No</button>
+                                                <button onClick={() => { setHasPlans(true); setIsCalculated(false); }} className={`px-3 py-1 text-[10px] font-bold rounded-md transition-all ${hasPlans ? 'bg-slate-900 text-white' : 'bg-zinc-100 text-zinc-500 hover:bg-zinc-200'}`}>Yes</button>
+                                                <button onClick={() => { setHasPlans(false); setIsCalculated(false); }} className={`px-3 py-1 text-[10px] font-bold rounded-md transition-all ${!hasPlans ? 'bg-slate-900 text-white' : 'bg-zinc-100 text-zinc-500 hover:bg-zinc-200'}`}>No</button>
                                             </div>
                                         </div>
-                                    </motion.div>
-                                )}
-                            </AnimatePresence>
 
-                            {/* Question 3: Utilities */}
-                            <AnimatePresence>
-                                {hasLand !== null && (
-                                    <motion.div
-                                        initial={{ height: 0, opacity: 0 }}
-                                        animate={{ height: 'auto', opacity: 1 }}
-                                        exit={{ height: 0, opacity: 0 }}
-                                        className="overflow-hidden"
-                                    >
-                                        <div className="flex justify-between items-center py-2 border-b border-zinc-100 last:border-0">
-                                            <span className="text-xs text-zinc-600">
-                                                {hasLand ? "Is the lot developed (utilities on site)?" : "Are you buying land that is developed?"}
-                                            </span>
-                                            <div className="flex gap-2">
-                                                <button onClick={() => { setHasUtilities(true); setIsCalculated(false); }} className={`px-3 py-1 text-[10px] font-bold rounded-md transition-all ${hasUtilities ? 'bg-slate-900 text-white' : 'bg-zinc-100 text-zinc-500 hover:bg-zinc-200'}`}>Yes</button>
-                                                <button onClick={() => { setHasUtilities(false); setIsCalculated(false); }} className={`px-3 py-1 text-[10px] font-bold rounded-md transition-all ${!hasUtilities ? 'bg-slate-900 text-white' : 'bg-zinc-100 text-zinc-500 hover:bg-zinc-200'}`}>No</button>
+                                        {/* Question 2: Engineering (Only if they have plans) */}
+                                        <AnimatePresence>
+                                            {hasPlans && (
+                                                <motion.div
+                                                    initial={{ height: 0, opacity: 0 }}
+                                                    animate={{ height: 'auto', opacity: 1 }}
+                                                    exit={{ height: 0, opacity: 0 }}
+                                                    className="overflow-hidden"
+                                                >
+                                                    <div className="flex justify-between items-center py-2 border-b border-zinc-100 last:border-0">
+                                                        <div className="flex items-center gap-2">
+                                                            <span className="text-xs text-zinc-600">Are your plans engineered?</span>
+                                                            <button onClick={() => setViewingArticle(ARTICLES.find(a => a.id === 15) || null)} className="text-blue-400/80 hover:text-blue-500 transition-colors p-1 hover:bg-zinc-100 rounded-full">
+                                                                <HelpCircle size={14} />
+                                                            </button>
+                                                        </div>
+                                                        <div className="flex gap-2">
+                                                            <button onClick={() => { setHasEngineering(true); setIsCalculated(false); }} className={`px-3 py-1 text-[10px] font-bold rounded-md transition-all ${hasEngineering ? 'bg-slate-900 text-white' : 'bg-zinc-100 text-zinc-500 hover:bg-zinc-200'}`}>Yes</button>
+                                                            <button onClick={() => { setHasEngineering(false); setIsCalculated(false); }} className={`px-3 py-1 text-[10px] font-bold rounded-md transition-all ${!hasEngineering ? 'bg-slate-900 text-white' : 'bg-zinc-100 text-zinc-500 hover:bg-zinc-200'}`}>No</button>
+                                                        </div>
+                                                    </div>
+                                                </motion.div>
+                                            )}
+                                        </AnimatePresence>
+
+                                        {/* Question 3: Utilities */}
+                                        <AnimatePresence>
+                                            {hasLand !== null && (
+                                                <motion.div
+                                                    initial={{ height: 0, opacity: 0 }}
+                                                    animate={{ height: 'auto', opacity: 1 }}
+                                                    exit={{ height: 0, opacity: 0 }}
+                                                    className="overflow-hidden"
+                                                >
+                                                    <div className="flex justify-between items-center py-2 border-b border-zinc-100 last:border-0">
+                                                        <span className="text-xs text-zinc-600">
+                                                            {hasLand ? "Is the lot developed (utilities on site)?" : "Are you buying land that is developed?"}
+                                                        </span>
+                                                        <div className="flex gap-2">
+                                                            <button onClick={() => { setHasUtilities(true); setIsCalculated(false); }} className={`px-3 py-1 text-[10px] font-bold rounded-md transition-all ${hasUtilities ? 'bg-slate-900 text-white' : 'bg-zinc-100 text-zinc-500 hover:bg-zinc-200'}`}>Yes</button>
+                                                            <button onClick={() => { setHasUtilities(false); setIsCalculated(false); }} className={`px-3 py-1 text-[10px] font-bold rounded-md transition-all ${!hasUtilities ? 'bg-slate-900 text-white' : 'bg-zinc-100 text-zinc-500 hover:bg-zinc-200'}`}>No</button>
+                                                        </div>
+                                                    </div>
+                                                </motion.div>
+                                            )}
+                                        </AnimatePresence>
+                                    </div>
+
+                                    {/* Total Budget - Step 3 (Revealed after Land, grouped with Soft Costs for flow) */}
+                                    <div className="space-y-4">
+                                        <div className="flex justify-between items-center">
+                                            <div className="flex flex-col gap-1">
+                                                <div className="flex items-center gap-2">
+                                                    <label className="text-xs uppercase tracking-widest text-zinc-900 font-bold">
+                                                        {hasLand ? 'Construction Budget' : 'All-In Budget'}
+                                                    </label>
+                                                    <button onClick={() => setViewingArticle(ARTICLES.find(a => a.id === 13) || null)} className="text-blue-400/80 hover:text-blue-500 transition-colors p-1 hover:bg-zinc-100 rounded-full">
+                                                        <HelpCircle size={14} />
+                                                    </button>
+                                                </div>
+                                                <p className="text-[10px] text-zinc-400">
+                                                    {hasLand
+                                                        ? 'Your max spending limit for the build (excluding land value).'
+                                                        : 'Your total spending limit including land, home, and fees.'}
+                                                </p>
                                             </div>
+                                            <span className="text-xl font-serif text-zinc-900 font-bold">{formatCurrency(totalBudget)}</span>
                                         </div>
-                                    </motion.div>
-                                )}
-                            </AnimatePresence>
-                        </div>
+                                        <input
+                                            type="range"
+                                            min={300000} max={5000000} step={10000}
+                                            value={totalBudget}
+                                            onChange={(e) => { setTotalBudget(Number(e.target.value)); setIsCalculated(false); }}
+                                            className="w-full h-2 bg-zinc-200 rounded-lg appearance-none cursor-pointer accent-slate-900"
+                                        />
+                                    </div>
 
-                        {/* Size Slider */}
-                        <div className="space-y-4 pt-6 border-t border-zinc-100">
-                            <div className="flex justify-between items-center">
-                                <div className="flex items-center gap-2">
-                                    <label className="text-xs uppercase tracking-widest text-zinc-500">Target Home Size</label>
-                                    <button onClick={() => setViewingArticle(ARTICLES.find(a => a.id === 12) || null)} className="text-blue-400/80 hover:text-blue-500 transition-colors p-1 hover:bg-zinc-100 rounded-full">
-                                        <HelpCircle size={14} />
-                                    </button>
-                                </div>
-                                <span className="text-xl font-serif text-zinc-900 font-bold">{targetSqFt.toLocaleString()} sq ft</span>
-                            </div>
-                            <input
-                                type="range"
-                                min={1000} max={10000} step={50}
-                                value={targetSqFt}
-                                onChange={(e) => { setTargetSqFt(Number(e.target.value)); setIsCalculated(false); }}
-                                className="w-full h-2 bg-zinc-200 rounded-lg appearance-none cursor-pointer accent-slate-900"
-                            />
-                            {/* Visualizer Helper */}
-                            <div className="text-xs text-center text-zinc-500 bg-zinc-50 py-2 rounded-lg border border-zinc-100">
-                                {targetSqFt < 2000 && "Comfortable 2-3 Bed, Small Lot"}
-                                {targetSqFt >= 2000 && targetSqFt < 3000 && "Spacious Family Home, 3-4 Bed, Office"}
-                                {targetSqFt >= 3000 && targetSqFt < 4500 && "Luxury Size, 4+ Bed, Rec Room, Large Garage"}
-                                {targetSqFt >= 4500 && "Estate Size, Extensive Amenities"}
-                            </div>
-                        </div>
+                                    {/* Size Slider - Step 4 */}
+                                    <div className="space-y-4 pt-6 border-t border-zinc-100">
+                                        <div className="flex justify-between items-center">
+                                            <div className="flex items-center gap-2">
+                                                <label className="text-xs uppercase tracking-widest text-zinc-500">Target Home Size</label>
+                                                <button onClick={() => setViewingArticle(ARTICLES.find(a => a.id === 12) || null)} className="text-blue-400/80 hover:text-blue-500 transition-colors p-1 hover:bg-zinc-100 rounded-full">
+                                                    <HelpCircle size={14} />
+                                                </button>
+                                            </div>
+                                            <span className="text-xl font-serif text-zinc-900 font-bold">{targetSqFt.toLocaleString()} sq ft</span>
+                                        </div>
+                                        <input
+                                            type="range"
+                                            min={1000} max={10000} step={50}
+                                            value={targetSqFt}
+                                            onChange={(e) => { setTargetSqFt(Number(e.target.value)); setIsCalculated(false); }}
+                                            className="w-full h-2 bg-zinc-200 rounded-lg appearance-none cursor-pointer accent-slate-900"
+                                        />
+                                        {/* Visualizer Helper */}
+                                        <div className="text-xs text-center text-zinc-500 bg-zinc-50 py-2 rounded-lg border border-zinc-100">
+                                            {targetSqFt < 2000 && "Comfortable 2-3 Bed, Small Lot"}
+                                            {targetSqFt >= 2000 && targetSqFt < 3000 && "Spacious Family Home, 3-4 Bed, Office"}
+                                            {targetSqFt >= 3000 && targetSqFt < 4500 && "Luxury Size, 4+ Bed, Rec Room, Large Garage"}
+                                            {targetSqFt >= 4500 && "Estate Size, Extensive Amenities"}
+                                        </div>
+                                    </div>
+                                </motion.div>
+                            )}
+                        </AnimatePresence>
 
                         {/* CALCULATE BUTTON */}
                         <div className="pt-4">
