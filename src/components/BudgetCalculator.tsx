@@ -698,6 +698,14 @@ export const BudgetCalculator: React.FC = () => {
                 </div>
             </div>
 
+            {/* Disclaimer Footer */}
+            <div className="mt-16 pt-8 border-t border-zinc-200 text-center max-w-4xl mx-auto opacity-60 hover:opacity-100 transition-opacity">
+                <p className="text-[10px] uppercase tracking-widest text-zinc-400 font-bold mb-2">Legal Disclaimer</p>
+                <p className="text-xs text-zinc-500 leading-relaxed">
+                    This calculator is for educational and illustrative purposes only. All figures provided are estimates based on market averages and do not represent a final bid or binding offer. Actual construction costs may vary significantly due to site conditions, material volatility, design complexity, and other unforeseen factors or "hidden costs" not accounted for in this preliminary analysis. This tool is designed to help you assess budget realism and identify next steps, not to guarantee a specific price.
+                </p>
+            </div>
+
             {/* Lead Capture Modal */}
             <AnimatePresence>
                 {showModal && (
