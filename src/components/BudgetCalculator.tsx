@@ -355,17 +355,16 @@ export const BudgetCalculator: React.FC = () => {
                         <div className="bg-white border border-zinc-200 rounded-xl p-4 space-y-4 shadow-sm">
                             <div className="flex items-center gap-2 mb-2">
                                 <span className="text-xs uppercase tracking-widest text-zinc-900 font-bold">Soft Cost Breakdown</span>
-                                <button
-                                    onClick={(e) => { e.stopPropagation(); setViewingArticle(ARTICLES.find(a => a.id === 9) || null); }}
-                                    className="text-blue-400/80 hover:text-blue-500 transition-colors p-1 hover:bg-zinc-100 rounded-full"
-                                >
-                                    <HelpCircle size={14} />
-                                </button>
                             </div>
 
                             {/* Question 1: Plans */}
                             <div className="flex justify-between items-center py-2 border-b border-zinc-100 last:border-0">
-                                <span className="text-xs text-zinc-600">Do you have architectural plans?</span>
+                                <div className="flex items-center gap-2">
+                                    <span className="text-xs text-zinc-600">Do You Have Design Plans?</span>
+                                    <button onClick={() => setViewingArticle(ARTICLES.find(a => a.id === 14) || null)} className="text-blue-400/80 hover:text-blue-500 transition-colors p-1 hover:bg-zinc-100 rounded-full">
+                                        <HelpCircle size={14} />
+                                    </button>
+                                </div>
                                 <div className="flex gap-2">
                                     <button onClick={() => { setHasPlans(true); setIsCalculated(false); }} className={`px-3 py-1 text-[10px] font-bold rounded-md transition-all ${hasPlans ? 'bg-slate-900 text-white' : 'bg-zinc-100 text-zinc-500 hover:bg-zinc-200'}`}>Yes</button>
                                     <button onClick={() => { setHasPlans(false); setIsCalculated(false); }} className={`px-3 py-1 text-[10px] font-bold rounded-md transition-all ${!hasPlans ? 'bg-slate-900 text-white' : 'bg-zinc-100 text-zinc-500 hover:bg-zinc-200'}`}>No</button>

@@ -1,7 +1,7 @@
 import React from 'react';
 import {
     DollarSign, PenTool, Gavel, Layout,
-    AlertTriangle, Compass, HelpCircle
+    AlertTriangle, Compass
 } from 'lucide-react';
 
 export interface Article {
@@ -215,57 +215,52 @@ export const ARTICLES: Article[] = [
     },
     // NEW EDUCATIONAL CONTENT FOR BUDGET CREATOR
     {
-        id: 9,
-        title: "The Invisible 20%: Understanding Soft Costs",
-        subtitle: "Why a $1M budget only buys you an $800k house.",
-        readTime: "8 min read",
-        category: "Budgeting",
-        gradient: "from-orange-800 to-amber-950",
-        icon: HelpCircle,
-        stageIds: [1], // Setting Budget
+        id: 14,
+        title: "Do You Have Design Plans?",
+        subtitle: "The Blueprint for Your Budget.",
+        readTime: "4 min read",
+        category: "Design",
+        gradient: "from-blue-900 to-indigo-950",
+        icon: PenTool,
+        stageIds: [1, 3], // Budget, Design
         content: (
             <div className="space-y-6 text-zinc-600 leading-relaxed font-light">
                 <p>
-                    Imagine you walk into a store to buy a $100 pair of sneakers, but at the register, they ring up as $125. You ask why, and the clerk says,
-                    "Oh, the extra $25 is for the box, the receipt paper, and the electricity to run the lights in here."
+                    Before we can build a house, we need a map. In home building, that map is your set of design plans. They show us everything from where the walls will go to where the windows will be. Knowing if you have these plans helps us understand how far along you are in the design phase and is a key part of creating an accurate budget.
                 </p>
                 <p>
-                    That is exactly how <strong>Soft Costs</strong> work in home building.
-                </p>
-                <p>
-                    Novice builders often make the mistake of thinking every dollar they spend goes into lumber, windows, and countertops (Hard Costs).
-                    But before you can pour a single drop of concrete, you have to pay for the "permission" and "planning" to build.
+                    Think of it like this: if you’re planning a road trip, having a final destination and route planned out is very different from just having a general idea of where you want to go. Both are great starting points, but they change how you plan.
                 </p>
 
-                <h3 className="text-2xl text-slate-900 font-serif mt-8 mb-4">The Breakdown: Where does the money go?</h3>
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-8">
-                    <div className="bg-slate-50 p-4 rounded-xl border border-slate-100">
-                        <strong className="text-slate-900 block mb-2 text-lg">1. Architecture & Engineering (8-12%)</strong>
-                        <p className="text-sm">You aren't just paying for pretty drawings. You are paying for structural stamps, civil engineering (drainage), and energy calculations.</p>
-                    </div>
-                    <div className="bg-slate-50 p-4 rounded-xl border border-slate-100">
-                        <strong className="text-slate-900 block mb-2 text-lg">2. Government Fees (3-5%)</strong>
-                        <p className="text-sm">Permits, impact fees, tap fees. This is literally the cost of writing a check to the city just to be allowed to start.</p>
-                    </div>
-                    <div className="bg-slate-50 p-4 rounded-xl border border-slate-100">
-                        <strong className="text-slate-900 block mb-2 text-lg">3. Site Prep (Variable)</strong>
-                        <p className="text-sm">Soil tests, surveys, hauling away debris. The land doesn't come ready-to-build by default.</p>
-                    </div>
-                    <div className="bg-slate-50 p-4 rounded-xl border border-slate-100">
-                        <strong className="text-slate-900 block mb-2 text-lg">4. Financial Costs (2-5%)</strong>
-                        <p className="text-sm">Loan origination fees and "interest during construction." Yes, you pay interest on the money while you use it.</p>
-                    </div>
-                </div>
+                <h3 className="text-2xl text-slate-900 font-serif mt-8 mb-4">If your answer is: "Yes, I have plans."</h3>
+                <p>
+                    Wonderful! This means you have a detailed blueprint of your future home.
+                </p>
+                <p>
+                    When you have a full set of architectural and engineering plans, it’s like having the exact recipe for a cake. We can see all the "ingredients"—the specific materials, the room sizes, the window styles—which allows us to calculate the costs much more accurately. It tells us precisely what we need to build, which is the most direct way to create a detailed and reliable budget for your project.
+                </p>
+
+                <h3 className="text-2xl text-slate-900 font-serif mt-8 mb-4">If your answer is: "No, I'm still figuring it out."</h3>
+                <p>
+                    That’s perfectly fine! This is where the magic begins. Most people start with a collection of ideas—pictures they love, features they want, and a general feeling they want their home to have.
+                </p>
 
                 <div className="bg-blue-50 p-6 rounded-2xl border border-blue-100 my-8">
-                    <h4 className="text-blue-600 font-bold uppercase tracking-widest text-xs mb-2">Pro Tip</h4>
-                    <p className="text-slate-900 font-medium">
-                        Always reserve <span className="text-blue-600">20-25%</span> of your total budget for soft costs.
+                    <p className="text-blue-700 font-medium text-lg mb-2">
+                        Dreaming Phase
                     </p>
-                    <p className="text-sm mt-2 text-zinc-500">
-                        If you have $1,000,000 total, you have ~$750,000 to actually build the structure. If you budget $1M for construction, you will run out of money before the drywall goes up.
+                    <p className="text-sm text-zinc-600">
+                        Answering "no" tells us that one of the first steps in our journey together will be to create those plans. We’ll need to account for the "soft costs" of design and engineering in your budget. This is the fun part where we get to dream with you and turn all those ideas into a concrete plan. Whether you want to start from scratch or work with one of our existing designs, we are here to help you create the perfect map for your new home.
                     </p>
                 </div>
+
+                <h3 className="text-2xl text-slate-900 font-serif mt-8 mb-4">Why Your Plans Matter So Much</h3>
+                <p>
+                    Your design plans are the single most important tool for determining the cost of your home. The size of the home, the complexity of the design, and the quality of the materials you choose all have a major impact on the final price.
+                </p>
+                <p>
+                    By telling us where you are in the design process, you help us understand what stage of planning you're in. Whether you have a complete set of plans or are just getting started with your vision, this information allows us to provide you with the most accurate and helpful budget estimate possible.
+                </p>
             </div>
         )
     },
