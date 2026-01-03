@@ -690,14 +690,14 @@ export const BudgetCalculator: React.FC = () => {
                                                     </div>
                                                     <h4 className="font-serif text-lg font-bold text-slate-900">Great! Here's our live calendar.</h4>
                                                     <p className="text-sm text-zinc-600">
-                                                        Select a time below to book your free call to discuss <strong>{generatedReport.cta.text.toLowerCase()}</strong>.
+                                                        Select a time below to book your free call to discuss <strong>{generatedReport.bookingTopic}</strong>.
                                                     </p>
                                                 </div>
-                                                <div className="w-full relative min-h-[600px] bg-white rounded-xl shadow-sm border border-zinc-100 overflow-hidden">
+                                                <div className="w-full relative min-h-[600px] bg-white rounded-xl shadow-sm border border-zinc-100">
                                                     <iframe
                                                         src="https://api.leadconnectorhq.com/widget/booking/xPaYSZulboJxxCpHa9dY"
-                                                        style={{ width: '100%', border: 'none', minHeight: '600px' }}
-                                                        scrolling="no"
+                                                        style={{ width: '100%', border: 'none', minHeight: '600px', overflow: 'auto' }}
+                                                        scrolling="yes"
                                                         id="EQQGeUU49pxoPjjuBmng_1767472093119"
                                                     />
                                                 </div>
