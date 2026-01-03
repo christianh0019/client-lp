@@ -265,6 +265,58 @@ export const ARTICLES: Article[] = [
         )
     },
     {
+        id: 15,
+        title: "Are Your Plans Engineered?",
+        subtitle: "Turning a Drawing into a Fortress.",
+        readTime: "5 min read",
+        category: "Construction",
+        gradient: "from-slate-800 to-zinc-950",
+        icon: Layout,
+        stageIds: [3, 4], // Design, Choosing Builder
+        content: (
+            <div className="space-y-6 text-zinc-600 leading-relaxed font-light">
+                <p>
+                    So, you have a design for your dream home—that's the fun part! It’s the visual map of your future. But just like a car is more than just a shiny exterior, a house is more than just its floor plan. This is where engineering comes in.
+                </p>
+                <p>
+                    If your design plans are the <em>what</em> (what the house looks like), engineering is the <em>how</em> (how to build it so it’s strong, safe, and lasts forever). Think of it as the technical instruction manual that guarantees your beautiful home won’t fall down.
+                </p>
+
+                <h3 className="text-2xl text-slate-900 font-serif mt-8 mb-4">Here’s what "engineering" really means:</h3>
+                <ul className="list-disc pl-6 space-y-4">
+                    <li>
+                        <strong className="text-slate-900">Structural Engineering:</strong> This is all about the "bones" of your house. Engineers do the math to figure out how strong the beams need to be to hold up the roof, how thick the foundation must be to support the weight of the house, and how to make sure everything stays standing through storms, wind, or even shaking ground. It’s what makes your home a fortress.
+                    </li>
+                    <li>
+                        <strong className="text-slate-900">Civil Engineering:</strong> This is about how your house lives on the land. A civil engineer plans for things like drainage—making sure that when it rains, the water flows away from your home, not into your basement. They design the slope of the land to keep your house safe and dry.
+                    </li>
+                    <li>
+                        <strong className="text-slate-900">Soils Report:</strong> Before we build, we need to know what we’re building on. Is the ground hard like a rock, or soft like clay? A soils report involves testing the ground to understand its strength. This is crucial because it tells us exactly how to design the foundation so it won't shift or crack over time.
+                    </li>
+                </ul>
+
+                <h3 className="text-2xl text-slate-900 font-serif mt-8 mb-4">If your answer is: "Yes, they're engineered."</h3>
+                <p>
+                    This is incredible news! It means you have the complete, official instruction manual for building your home. With engineered plans, nearly all the technical questions have been answered. This allows us to calculate your construction costs with a very high degree of accuracy because we know exactly what materials and methods are required to build your home safely.
+                </p>
+
+                <h3 className="text-2xl text-slate-900 font-serif mt-8 mb-4">If your answer is: "No, I just have the design."</h3>
+                <p>
+                    You are in a perfect and very common spot! Having a design is the first creative step. Answering "no" simply means that the next phase of our journey is to get your plans engineered. This is a standard and essential part of every custom home project. We will include the cost for this important work in your budget under "soft costs," ensuring your vision is built to be as strong and safe as it is beautiful.
+                </p>
+
+                <div className="bg-slate-50 p-6 rounded-2xl border border-slate-100 my-8">
+                    <p className="text-slate-700 font-medium text-lg mb-2">
+                        Why Engineering is So Important
+                    </p>
+                    <p className="text-sm text-zinc-600">
+                        Engineering is the invisible hero of your home. It’s the peace of mind that comes from knowing your home isn’t just designed well, but built correctly from the ground up. By telling us if your plans are engineered, you help us understand exactly where you are in the process, allowing us to give you the clearest and most accurate budget possible.
+                    </p>
+                </div>
+            </div>
+        )
+    },
+    {
         id: 10,
         title: "Do You Own Land?",
         subtitle: "Why this is a key question for your budget.",

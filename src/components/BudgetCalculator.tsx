@@ -371,18 +371,36 @@ export const BudgetCalculator: React.FC = () => {
                                 </div>
                             </div>
 
-                            {/* Question 2: Engineering */}
-                            <div className="flex justify-between items-center py-2 border-b border-zinc-100 last:border-0">
-                                <span className="text-xs text-zinc-600">Have you engineered the project?</span>
-                                <div className="flex gap-2">
-                                    <button onClick={() => { setHasEngineering(true); setIsCalculated(false); }} className={`px-3 py-1 text-[10px] font-bold rounded-md transition-all ${hasEngineering ? 'bg-slate-900 text-white' : 'bg-zinc-100 text-zinc-500 hover:bg-zinc-200'}`}>Yes</button>
-                                    <button onClick={() => { setHasEngineering(false); setIsCalculated(false); }} className={`px-3 py-1 text-[10px] font-bold rounded-md transition-all ${!hasEngineering ? 'bg-slate-900 text-white' : 'bg-zinc-100 text-zinc-500 hover:bg-zinc-200'}`}>No</button>
-                                </div>
-                            </div>
+                            {/* Question 2: Engineering (Only if they have plans) */}
+                            <AnimatePresence>
+                                {hasPlans && (
+                                    <motion.div
+                                        initial={{ height: 0, opacity: 0 }}
+                                        animate={{ height: 'auto', opacity: 1 }}
+                                        exit={{ height: 0, opacity: 0 }}
+                                        className="overflow-hidden"
+                                    >
+                                        <div className="flex justify-between items-center py-2 border-b border-zinc-100 last:border-0">
+                                            <div className="flex items-center gap-2">
+                                                <span className="text-xs text-zinc-600">Are your plans engineered?</span>
+                                                <button onClick={() => setViewingArticle(ARTICLES.find(a => a.id === 15) || null)} className="text-blue-400/80 hover:text-blue-500 transition-colors p-1 hover:bg-zinc-100 rounded-full">
+                                                    <HelpCircle size={14} />
+                                                </button>
+                                            </div>
+                                            <div className="flex gap-2">
+                                                <button onClick={() => { setHasEngineering(true); setIsCalculated(false); }} className={`px-3 py-1 text-[10px] font-bold rounded-md transition-all ${hasEngineering ? 'bg-slate-900 text-white' : 'bg-zinc-100 text-zinc-500 hover:bg-zinc-200'}`}>Yes</button>
+                                                <button onClick={() => { setHasEngineering(false); setIsCalculated(false); }} className={`px-3 py-1 text-[10px] font-bold rounded-md transition-all ${!hasEngineering ? 'bg-slate-900 text-white' : 'bg-zinc-100 text-zinc-500 hover:bg-zinc-200'}`}>No</button>
+                                            </div>
+                                        </div>
+                                    </motion.div>
+                                )}
+                            </AnimatePresence>
 
                             {/* Question 3: Utilities */}
                             <div className="flex justify-between items-center py-2 border-b border-zinc-100 last:border-0">
-                                <span className="text-xs text-zinc-600">Is the lot developed (utilities on site)?</span>
+                                <span className="text-xs text-zinc-600">
+                                    {hasLand ? "Is the lot developed (utilities on site)?" : "Are you buying land that is developed?"}
+                                </span>
                                 <div className="flex gap-2">
                                     <button onClick={() => { setHasUtilities(true); setIsCalculated(false); }} className={`px-3 py-1 text-[10px] font-bold rounded-md transition-all ${hasUtilities ? 'bg-slate-900 text-white' : 'bg-zinc-100 text-zinc-500 hover:bg-zinc-200'}`}>Yes</button>
                                     <button onClick={() => { setHasUtilities(false); setIsCalculated(false); }} className={`px-3 py-1 text-[10px] font-bold rounded-md transition-all ${!hasUtilities ? 'bg-slate-900 text-white' : 'bg-zinc-100 text-zinc-500 hover:bg-zinc-200'}`}>No</button>
