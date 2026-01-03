@@ -1,11 +1,9 @@
 import React, { useState } from 'react';
 import { ArrowRight, ArrowLeft, Check, AlertCircle, Building2, Wallet, PieChart, User, Loader2 } from 'lucide-react';
+import { useNavigate } from 'react-router-dom';
 
-interface SurveyFormProps {
-    onComplete: () => void;
-}
-
-const SurveyForm: React.FC<SurveyFormProps> = ({ onComplete }) => {
+const SurveyForm: React.FC = () => {
+    const navigate = useNavigate();
     const [step, setStep] = useState(1);
     const [disqualified, setDisqualified] = useState(false);
     const [formData, setFormData] = useState({
@@ -52,12 +50,12 @@ const SurveyForm: React.FC<SurveyFormProps> = ({ onComplete }) => {
 
             // Regardless of webhook success (or CORS failure), we proceed to the calculator
             // This ensures a smooth user experience even if the backend is flaky
-            onComplete();
+            navigate('/calculator');
 
         } catch (error) {
             console.error('Error submitting form:', error);
             // Fallback: Proceed anyway
-            onComplete();
+            navigate('/calculator');
         } finally {
             setLoading(false);
         }

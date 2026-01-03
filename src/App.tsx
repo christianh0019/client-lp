@@ -1,11 +1,9 @@
-import { useState } from 'react';
+import { Routes, Route } from 'react-router-dom';
 import SurveyForm from './components/SurveyForm';
 import { BudgetCalculator } from './components/BudgetCalculator';
 import { CheckCircle2 } from 'lucide-react';
 
 function App() {
-  const [unlocked, setUnlocked] = useState(false);
-
   return (
     <div className="min-h-screen bg-slate-50 flex flex-col font-sans text-slate-900 selection:bg-purple-200 selection:text-purple-900">
 
@@ -27,25 +25,27 @@ function App() {
       <div className="flex-grow pt-24 pb-20 px-4 md:px-6">
         <div className="container mx-auto">
 
-          {!unlocked ? (
-            <div className="max-w-4xl mx-auto">
-              <div className="text-center mb-12 animate-fadeIn">
-                <h1 className="text-4xl md:text-5xl font-serif font-bold text-slate-900 mb-6 leading-tight">
-                  Calculate Your Custom Home Budget <br className="hidden md:block" />
-                  <span className="text-transparent bg-clip-text bg-gradient-to-r from-purple-700 to-pink-600">
-                    In Seconds
-                  </span>
-                </h1>
-                <p className="text-lg text-slate-600 max-w-2xl mx-auto">
-                  Stop guessing. Use our AI-powered calculator to get real-time cost estimates based on your local market data. Answer 4 quick questions to unlock the tool.
-                </p>
-              </div>
+          <Routes>
+            <Route path="/" element={
+              <div className="max-w-4xl mx-auto">
+                <div className="text-center mb-12 animate-fadeIn">
+                  <h1 className="text-4xl md:text-5xl font-serif font-bold text-slate-900 mb-6 leading-tight">
+                    Calculate Your Custom Home Budget <br className="hidden md:block" />
+                    <span className="text-transparent bg-clip-text bg-gradient-to-r from-purple-700 to-pink-600">
+                      In Seconds
+                    </span>
+                  </h1>
+                  <p className="text-lg text-slate-600 max-w-2xl mx-auto">
+                    Stop guessing. Use our AI-powered calculator to get real-time cost estimates based on your local market data. Answer 4 quick questions to unlock the tool.
+                  </p>
+                </div>
 
-              <SurveyForm onComplete={() => setUnlocked(true)} />
-            </div>
-          ) : (
-            <BudgetCalculator />
-          )}
+                <SurveyForm />
+              </div>
+            } />
+
+            <Route path="/calculator" element={<BudgetCalculator />} />
+          </Routes>
 
         </div>
       </div>
