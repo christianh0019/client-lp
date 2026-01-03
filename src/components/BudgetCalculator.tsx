@@ -15,7 +15,7 @@ export const BudgetCalculator: React.FC = () => {
     const [hasPlans, setHasPlans] = useState(false);
     const [hasEngineering, setHasEngineering] = useState(false);
     const [hasUtilities, setHasUtilities] = useState(false);
-    const [hasLand, setHasLand] = useState(false);
+    const [hasLand, setHasLand] = useState<boolean | null>(null);
     const [city, setCity] = useState('');
     const [marketData, setMarketData] = useState<MarketData | null>(null);
 
@@ -38,7 +38,7 @@ export const BudgetCalculator: React.FC = () => {
     const [viewingArticle, setViewingArticle] = useState<Article | null>(null);
 
     // Calculate Breakdown
-    const breakdown = calculateBudgetBreakdown(totalBudget, !hasLand ? landCost : 0, targetSqFt, { hasPlans, hasEngineering, hasUtilities });
+    const breakdown = calculateBudgetBreakdown(totalBudget, hasLand === false ? landCost : 0, targetSqFt, { hasPlans, hasEngineering, hasUtilities });
 
     // Calculate Feasibility
     const feasibility = breakdown.hardCostPerSqFt > 0 && marketData
@@ -316,10 +316,10 @@ export const BudgetCalculator: React.FC = () => {
                                     </button>
                                 </div>
                                 <div className="flex gap-2 mb-4 bg-zinc-100 p-1 rounded-lg w-fit">
-                                    <button onClick={() => { setHasLand(true); setIsCalculated(false); }} className={`px-3 py-1.5 text-xs rounded-md transition-all ${hasLand ? 'bg-white text-zinc-900 shadow-sm font-bold' : 'text-zinc-500 hover:text-zinc-900'}`}>
+                                    <button onClick={() => { setHasLand(true); setIsCalculated(false); }} className={`px-3 py-1.5 text-xs rounded-md transition-all ${hasLand === true ? 'bg-white text-zinc-900 shadow-sm font-bold' : 'text-zinc-500 hover:text-zinc-900'}`}>
                                         I have land
                                     </button>
-                                    <button onClick={() => { setHasLand(false); setIsCalculated(false); }} className={`px-3 py-1.5 text-xs rounded-md transition-all ${!hasLand ? 'bg-white text-zinc-900 shadow-sm font-bold' : 'text-zinc-500 hover:text-zinc-900'}`}>
+                                    <button onClick={() => { setHasLand(false); setIsCalculated(false); }} className={`px-3 py-1.5 text-xs rounded-md transition-all ${hasLand === false ? 'bg-white text-zinc-900 shadow-sm font-bold' : 'text-zinc-500 hover:text-zinc-900'}`}>
                                         I need land
                                     </button>
                                 </div>
@@ -397,15 +397,26 @@ export const BudgetCalculator: React.FC = () => {
                             </AnimatePresence>
 
                             {/* Question 3: Utilities */}
-                            <div className="flex justify-between items-center py-2 border-b border-zinc-100 last:border-0">
-                                <span className="text-xs text-zinc-600">
-                                    {hasLand ? "Is the lot developed (utilities on site)?" : "Are you buying land that is developed?"}
-                                </span>
-                                <div className="flex gap-2">
-                                    <button onClick={() => { setHasUtilities(true); setIsCalculated(false); }} className={`px-3 py-1 text-[10px] font-bold rounded-md transition-all ${hasUtilities ? 'bg-slate-900 text-white' : 'bg-zinc-100 text-zinc-500 hover:bg-zinc-200'}`}>Yes</button>
-                                    <button onClick={() => { setHasUtilities(false); setIsCalculated(false); }} className={`px-3 py-1 text-[10px] font-bold rounded-md transition-all ${!hasUtilities ? 'bg-slate-900 text-white' : 'bg-zinc-100 text-zinc-500 hover:bg-zinc-200'}`}>No</button>
-                                </div>
-                            </div>
+                            <AnimatePresence>
+                                {hasLand !== null && (
+                                    <motion.div
+                                        initial={{ height: 0, opacity: 0 }}
+                                        animate={{ height: 'auto', opacity: 1 }}
+                                        exit={{ height: 0, opacity: 0 }}
+                                        className="overflow-hidden"
+                                    >
+                                        <div className="flex justify-between items-center py-2 border-b border-zinc-100 last:border-0">
+                                            <span className="text-xs text-zinc-600">
+                                                {hasLand ? "Is the lot developed (utilities on site)?" : "Are you buying land that is developed?"}
+                                            </span>
+                                            <div className="flex gap-2">
+                                                <button onClick={() => { setHasUtilities(true); setIsCalculated(false); }} className={`px-3 py-1 text-[10px] font-bold rounded-md transition-all ${hasUtilities ? 'bg-slate-900 text-white' : 'bg-zinc-100 text-zinc-500 hover:bg-zinc-200'}`}>Yes</button>
+                                                <button onClick={() => { setHasUtilities(false); setIsCalculated(false); }} className={`px-3 py-1 text-[10px] font-bold rounded-md transition-all ${!hasUtilities ? 'bg-slate-900 text-white' : 'bg-zinc-100 text-zinc-500 hover:bg-zinc-200'}`}>No</button>
+                                            </div>
+                                        </div>
+                                    </motion.div>
+                                )}
+                            </AnimatePresence>
                         </div>
 
                         {/* Size Slider */}
