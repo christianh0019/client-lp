@@ -1,73 +1,83 @@
-# React + TypeScript + Vite
+# Client-LP: The Ultimate Custom Home Budget Calculator & Lead Magnet
 
-This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
+**Client-LP** is a high-performance, React-based lead generation tool designed specifically for Custom Home Builders. It goes beyond simple contact forms by offering tangible value to prospective clients: a detailed, realistic budget breakdown and an "AI-generated" project roadmap.
 
-Currently, two official plugins are available:
+This tool builds trust, positions the builder as an expert, and pre-qualifies leads by educating them on the financial realities of custom home building before they ever book a call.
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react) uses [Babel](https://babeljs.io/) (or [oxc](https://oxc.rs) when used in [rolldown-vite](https://vite.dev/guide/rolldown)) for Fast Refresh
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react-swc) uses [SWC](https://swc.rs/) for Fast Refresh
+## 🚀 Key Features
 
-## React Compiler
+### 1. Reverse-Engineering Budget Logic
+Most calculators ask "How much does your house cost?". This calculator asks **"What is your total budget?"** and primarily works backward to tell the client what they can afford to build ($ per sq ft).
+-   **Input**: Total Investment, Land Cost, Target Size.
+-   **Logic**: Automatically deducts Land and Soft Costs first.
+-   **Output**: The remaining "Hard Construction Budget" and the resulting **Construction Power** (Cost per Sq Ft).
 
-The React Compiler is not enabled on this template because of its impact on dev & build performances. To add it, see [this documentation](https://react.dev/learn/react-compiler/installation).
+### 2. Granular Soft Cost Analysis
+The calculator doesn't just guess soft costs. It intelligently asks about the project status to refine the numbers:
+-   **Land Status**: Owned vs. Needed (Dynamic Land Cost Slider).
+-   **Design Plans**: Do they exist? (Adjusts Architectural fees).
+-   **Engineering**: Is it done? (Adjusts Engineering fees).
+-   **Utilities**: Is the lot developed? (Adjusts Site Work/Impact fees).
+*Result: A highly accurate "Soft Cost" bucket that educating clients on where their money goes.*
 
-## Expanding the ESLint configuration
+### 3. Market-Aware Feasibility Gauge
+The system validates the user's budget against real-world market data for their selected city.
+-   **Unrealistic**: Budget is below market minimums.
+-   **Tight**: Budget is workable but requires strict scope control.
+-   **Good**: Healthy budget for a custom home.
+-   **Luxury**: High-end budget allowing for premium finishes.
 
-If you are developing a production application, we recommend updating the configuration to enable type-aware lint rules:
+### 4. "Smart Agent" Report Engine (`ReportGenerator.ts`)
+After lead capture, the system runs a deterministic "AI" analysis of the user's specific situation to generate a personalized project roadmap.
+-   **Scenario Detection**: Identifies if the user is stuck at Land Acquisition, Design, Engineering, or is Ready to Build.
+-   **Personalized Copy**: Greets the user by name and references their specific budget and city.
+-   **Tailored Advice**:
+    -   *If Unrealistic*: Suggests value engineering and scope reduction.
+    -   *If No Land*: Advises on land feasibility and acquisition.
+    -   *If Ready*: Encourages moving to a hard bid.
 
-```js
-export default defineConfig([
-  globalIgnores(['dist']),
-  {
-    files: ['**/*.{ts,tsx}'],
-    extends: [
-      // Other configs...
+### 5. Dynamic Calls-to-Action (CTA) & Booking
+The Call-to-Action button adapts to the report's conclusion:
+-   **"Start Your Land Search"** (for users without land).
+-   **"Schedule Design Consultation"** (for users needing plans).
+-   **"Discuss Engineering Strategy"** (for users with plans but no permits).
+-   **"Request Construction Bid"** (for ready-to-build users).
 
-      // Remove tseslint.configs.recommended and replace with this
-      tseslint.configs.recommendedTypeChecked,
-      // Alternatively, use this for stricter rules
-      tseslint.configs.strictTypeChecked,
-      // Optionally, add this for stylistic rules
-      tseslint.configs.stylisticTypeChecked,
+**Conversion Feature**: Clicking the CTA seamlessly reveals an **inline booking calendar**, keeping the user on the page while offering a direct path to a meeting.
 
-      // Other configs...
-    ],
-    languageOptions: {
-      parserOptions: {
-        project: ['./tsconfig.node.json', './tsconfig.app.json'],
-        tsconfigRootDir: import.meta.dirname,
-      },
-      // other options...
-    },
-  },
-])
-```
+---
 
-You can also install [eslint-plugin-react-x](https://github.com/Rel1cx/eslint-react/tree/main/packages/plugins/eslint-plugin-react-x) and [eslint-plugin-react-dom](https://github.com/Rel1cx/eslint-react/tree/main/packages/plugins/eslint-plugin-react-dom) for React-specific lint rules:
+## 🛠 Technical Architecture
 
-```js
-// eslint.config.js
-import reactX from 'eslint-plugin-react-x'
-import reactDom from 'eslint-plugin-react-dom'
+This project is built with a modern stack optimized for speed and user experience:
 
-export default defineConfig([
-  globalIgnores(['dist']),
-  {
-    files: ['**/*.{ts,tsx}'],
-    extends: [
-      // Other configs...
-      // Enable lint rules for React
-      reactX.configs['recommended-typescript'],
-      // Enable lint rules for React DOM
-      reactDom.configs.recommended,
-    ],
-    languageOptions: {
-      parserOptions: {
-        project: ['./tsconfig.node.json', './tsconfig.app.json'],
-        tsconfigRootDir: import.meta.dirname,
-      },
-      // other options...
-    },
-  },
-])
-```
+-   **Framework**: React (Vite)
+-   **Language**: TypeScript
+-   **Styling**: Tailwind CSS
+-   **Animation**: Framer Motion (for smooth sliders, modals, and report reveals)
+-   **Routing**: React Router DOM (Single Page App structure)
+
+### Core Files
+
+-   `src/components/BudgetCalculator.tsx`: The heart of the application. Manages all UI state, lead capture modal, and orchestrates the report generation.
+-   `src/services/BudgetLogic.ts`: Pure functional logic for all financial calculations. Validated against industry standards for soft cost percentages.
+-   `src/services/ReportGenerator.ts`: The "Brain" of the operation. Contains the logic to map project states to specific advice, urgency levels, and CTAs.
+-   `src/services/LocationCostService.ts`: Handles market data retrieval (extensible to an API).
+
+---
+
+## 💡 The "Why" (Deliverables)
+
+For the Builder/Agency, this tool delivers:
+1.  **High-Quality Leads**: You get data on their **Budget, Land Status, Design Status, and Timeline** before you speak.
+2.  **Trust & Authority**: You give them valuable financial clarity for free, establishing yourself as the honest guide.
+3.  **Efficiency**: The "Unrealistic" feasibility status gently educates clients who can't afford you, saving your sales team from bad calls.
+4.  **Booking Automation**: The integrated calendar removes friction from the "Interest" to "Meeting" conversion step.
+
+## 📦 Setup & Deployment
+
+1.  **Install Dependencies**: `npm install`
+2.  **Run Development**: `npm run dev`
+3.  **Build for Production**: `npm run build`
+
+*Designed to be deployed on Vercel/Netlify as a standalone Landing Page or embedded submodule.*
