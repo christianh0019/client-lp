@@ -237,10 +237,10 @@ export const BudgetCalculator: React.FC = () => {
             <div className="flex flex-col md:flex-row md:items-end justify-between mb-8 gap-6 animate-fadeIn">
                 <div className="space-y-4 max-w-2xl">
                     <h2 className="text-4xl md:text-5xl font-serif tracking-tighter text-slate-900 leading-tight">
-                        Your Custom Home Budget & detailed Project Roadmap.
+                        Will Your Budget Actually Build Your Dream Home?
                     </h2>
                     <p className="text-zinc-500 text-lg leading-relaxed">
-                        Get a realistic cost breakdown in seconds. We'll also send you a full report on the next steps to make your dream home a reality based on your answers.
+                        In just 30 seconds, you'll find out what you can afford to build and exactly what to do next (it's completely free)
                     </p>
                 </div>
             </div>
