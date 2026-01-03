@@ -288,7 +288,12 @@ export const BudgetCalculator: React.FC = () => {
                         {/* Total Budget */}
                         <div className="space-y-4">
                             <div className="flex justify-between items-center">
-                                <label className="text-xs uppercase tracking-widest text-zinc-500">Total Investment Cap</label>
+                                <div className="flex items-center gap-2">
+                                    <label className="text-xs uppercase tracking-widest text-zinc-500">Total Investment Cap</label>
+                                    <button onClick={() => setViewingArticle(ARTICLES.find(a => a.id === 13) || null)} className="text-blue-400/80 hover:text-blue-500 transition-colors p-1 hover:bg-zinc-100 rounded-full">
+                                        <HelpCircle size={14} />
+                                    </button>
+                                </div>
                                 <span className="text-xl font-serif text-zinc-900 font-bold">{formatCurrency(totalBudget)}</span>
                             </div>
                             <input

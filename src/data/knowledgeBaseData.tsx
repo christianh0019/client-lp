@@ -435,6 +435,70 @@ export const ARTICLES: Article[] = [
                 </ul>
             </div>
         )
+    },
+    {
+        id: 13,
+        title: "Understanding 'Total All-In Investment'",
+        subtitle: "The fuel tank for your entire journey—not just the engine.",
+        readTime: "4 min read",
+        category: "Budgeting",
+        gradient: "from-slate-800 to-black",
+        icon: DollarSign,
+        stageIds: [0, 1], // Getting Started, Budget
+        content: (
+            <div className="space-y-6 text-zinc-300 leading-relaxed font-light">
+                <p>
+                    Building a custom home is an exciting journey, and the first step is understanding your budget.
+                    When you think about your budget, it's easy to only picture the house itself—the walls, the roof, the beautiful kitchen.
+                </p>
+                <p>
+                    But building a home is a bit like planning a big vacation. Your total vacation budget doesn't just cover the hotel; it also has to include the plane tickets, the food, and the fun activities that make the trip possible.
+                </p>
+                <div className="bg-white/5 p-6 rounded-2xl border border-white/10 my-6">
+                    <p className="font-serif text-lg text-white mb-2">The Fuel Tank Analogy</p>
+                    <p className="text-sm text-zinc-400">
+                        Think of your <strong>Total All-In Investment</strong> as your project's entire fuel tank. Not all of that fuel goes into the actual construction.
+                        A portion of it powers the important steps that happen before we can even break ground.
+                    </p>
+                </div>
+
+                <h3 className="text-2xl text-white font-serif mt-8 mb-4">The 4 Pillars of Your Investment</h3>
+                <ul className="space-y-4">
+                    <li className="flex gap-4 items-start">
+                        <div className="min-w-8 h-8 rounded-full bg-blue-500/20 text-blue-400 flex items-center justify-center font-bold">1</div>
+                        <div>
+                            <strong className="text-white block">The Land</strong>
+                            <p className="text-sm mt-1">This is the spot where your dream home will live. Whether you already own it or need to buy it, the cost of the land is a big piece of your total investment.</p>
+                        </div>
+                    </li>
+                    <li className="flex gap-4 items-start">
+                        <div className="min-w-8 h-8 rounded-full bg-blue-500/20 text-blue-400 flex items-center justify-center font-bold">2</div>
+                        <div>
+                            <strong className="text-white block">The "Soft Costs"</strong>
+                            <p className="text-sm mt-1">Imagine these as the blueprints and permissions needed for your journey. This includes architect fees, engineering plans, and city permit fees.</p>
+                        </div>
+                    </li>
+                    <li className="flex gap-4 items-start">
+                        <div className="min-w-8 h-8 rounded-full bg-blue-500/20 text-blue-400 flex items-center justify-center font-bold">3</div>
+                        <div>
+                            <strong className="text-white block">The Site Costs</strong>
+                            <p className="text-sm mt-1">Getting your land ready for construction. Like preparing the foundation before you build with LEGOs. Clearing trees, leveling ground, and bringing in utilities.</p>
+                        </div>
+                    </li>
+                    <li className="flex gap-4 items-start">
+                        <div className="min-w-8 h-8 rounded-full bg-blue-500/20 text-blue-400 flex items-center justify-center font-bold">4</div>
+                        <div>
+                            <strong className="text-white block">The Construction</strong>
+                            <p className="text-sm mt-1">The part you've been dreaming of! Foundations, framing, finishes, and fixtures. This is usually about 75-80% of the total pie.</p>
+                        </div>
+                    </li>
+                </ul>
+
+                <p className="mt-8">
+                    Our budget calculator is designed to help you see this full picture, so you can plan with confidence and turn your dream home into a reality.
+                </p>
+            </div>
+        )
     }
 ];
 
