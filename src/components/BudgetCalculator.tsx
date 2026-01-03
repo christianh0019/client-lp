@@ -167,33 +167,33 @@ export const BudgetCalculator: React.FC = () => {
                             initial={{ opacity: 0, scale: 0.95, y: 20 }}
                             animate={{ opacity: 1, scale: 1, y: 0 }}
                             exit={{ opacity: 0, scale: 0.95, y: 20 }}
-                            className="bg-[#111] border border-white/10 w-full max-w-2xl max-h-[90vh] overflow-y-auto rounded-3xl relative z-60 shadow-2xl flex flex-col"
+                            className="bg-white border border-zinc-200 w-full max-w-2xl max-h-[90vh] overflow-y-auto rounded-3xl relative z-60 shadow-2xl flex flex-col"
                         >
                             <div className={`h-32 bg-gradient-to-r ${viewingArticle.gradient} shrink-0 relative flex items-center px-8`}>
                                 <button
                                     onClick={() => setViewingArticle(null)}
-                                    className="absolute top-4 right-4 p-2 bg-black/20 rounded-full hover:bg-black/40 text-white transition-colors"
+                                    className="absolute top-4 right-4 p-2 bg-black/10 rounded-full hover:bg-black/20 text-white transition-colors"
                                 >
                                     <X size={18} />
                                 </button>
                                 <viewingArticle.icon size={64} className="text-white/20 absolute right-8" />
                                 <div>
-                                    <span className="text-[10px] uppercase tracking-widest text-white/60 bg-black/20 px-2 py-1 rounded-full mb-2 inline-block leading-none">
+                                    <span className="text-[10px] uppercase tracking-widest text-white/90 bg-black/10 px-2 py-1 rounded-full mb-2 inline-block leading-none">
                                         {viewingArticle.category}
                                     </span>
                                     <h2 className="text-2xl font-serif text-white">{viewingArticle.title}</h2>
                                 </div>
                             </div>
                             <div className="p-8">
-                                <div className="flex items-center gap-2 text-xs text-zinc-500 mb-6 uppercase tracking-widest">
+                                <div className="flex items-center gap-2 text-xs text-zinc-400 mb-6 uppercase tracking-widest">
                                     <Clock size={12} /> {viewingArticle.readTime}
                                 </div>
-                                <div className="prose prose-invert prose-sm text-zinc-300">
+                                <div className="prose prose-zinc prose-sm text-zinc-600">
                                     {viewingArticle.content}
                                 </div>
                                 <button
                                     onClick={() => setViewingArticle(null)}
-                                    className="mt-8 w-full py-3 bg-white/5 hover:bg-white/10 border border-white/10 rounded-xl text-sm font-medium transition-colors"
+                                    className="mt-8 w-full py-3 bg-zinc-100 hover:bg-zinc-200 border border-zinc-200 rounded-xl text-sm font-medium transition-colors text-zinc-900"
                                 >
                                     Close Guide
                                 </button>
