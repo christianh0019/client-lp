@@ -331,7 +331,7 @@ export const BudgetCalculator: React.FC = () => {
 
                         {/* Land Logic - Step 1 (Revealed after city) */}
                         <AnimatePresence>
-                            {!!city && (
+                            {!!marketData && (
                                 <motion.div
                                     initial={{ opacity: 0, height: 0 }}
                                     animate={{ opacity: 1, height: 'auto' }}
@@ -413,14 +413,14 @@ export const BudgetCalculator: React.FC = () => {
                                                 </button>
                                             </div>
                                             <div className="flex gap-2">
-                                                <button onClick={() => { setHasPlans(true); setIsCalculated(false); }} className={`px-3 py-1 text-[10px] font-bold rounded-md transition-all ${hasPlans ? 'bg-slate-900 text-white' : 'bg-zinc-100 text-zinc-500 hover:bg-zinc-200'}`}>Yes</button>
-                                                <button onClick={() => { setHasPlans(false); setIsCalculated(false); }} className={`px-3 py-1 text-[10px] font-bold rounded-md transition-all ${!hasPlans ? 'bg-slate-900 text-white' : 'bg-zinc-100 text-zinc-500 hover:bg-zinc-200'}`}>No</button>
+                                                <button onClick={() => { setHasPlans(true); setIsCalculated(false); }} className={`px-3 py-1 text-[10px] font-bold rounded-md transition-all ${hasPlans === true ? 'bg-slate-900 text-white' : 'bg-zinc-100 text-zinc-500 hover:bg-zinc-200'}`}>Yes</button>
+                                                <button onClick={() => { setHasPlans(false); setIsCalculated(false); }} className={`px-3 py-1 text-[10px] font-bold rounded-md transition-all ${hasPlans === false ? 'bg-slate-900 text-white' : 'bg-zinc-100 text-zinc-500 hover:bg-zinc-200'}`}>No</button>
                                             </div>
                                         </div>
 
                                         {/* Question 2: Engineering (Only if they have plans) */}
                                         <AnimatePresence>
-                                            {hasPlans && (
+                                            {hasPlans === true && (
                                                 <motion.div
                                                     initial={{ height: 0, opacity: 0 }}
                                                     animate={{ height: 'auto', opacity: 1 }}
@@ -435,8 +435,8 @@ export const BudgetCalculator: React.FC = () => {
                                                             </button>
                                                         </div>
                                                         <div className="flex gap-2">
-                                                            <button onClick={() => { setHasEngineering(true); setIsCalculated(false); }} className={`px-3 py-1 text-[10px] font-bold rounded-md transition-all ${hasEngineering ? 'bg-slate-900 text-white' : 'bg-zinc-100 text-zinc-500 hover:bg-zinc-200'}`}>Yes</button>
-                                                            <button onClick={() => { setHasEngineering(false); setIsCalculated(false); }} className={`px-3 py-1 text-[10px] font-bold rounded-md transition-all ${!hasEngineering ? 'bg-slate-900 text-white' : 'bg-zinc-100 text-zinc-500 hover:bg-zinc-200'}`}>No</button>
+                                                            <button onClick={() => { setHasEngineering(true); setIsCalculated(false); }} className={`px-3 py-1 text-[10px] font-bold rounded-md transition-all ${hasEngineering === true ? 'bg-slate-900 text-white' : 'bg-zinc-100 text-zinc-500 hover:bg-zinc-200'}`}>Yes</button>
+                                                            <button onClick={() => { setHasEngineering(false); setIsCalculated(false); }} className={`px-3 py-1 text-[10px] font-bold rounded-md transition-all ${hasEngineering === false ? 'bg-slate-900 text-white' : 'bg-zinc-100 text-zinc-500 hover:bg-zinc-200'}`}>No</button>
                                                         </div>
                                                     </div>
                                                 </motion.div>
@@ -457,8 +457,8 @@ export const BudgetCalculator: React.FC = () => {
                                                             {hasLand ? "Is the lot developed (utilities on site)?" : "Are you buying land that is developed?"}
                                                         </span>
                                                         <div className="flex gap-2">
-                                                            <button onClick={() => { setHasUtilities(true); setIsCalculated(false); }} className={`px-3 py-1 text-[10px] font-bold rounded-md transition-all ${hasUtilities ? 'bg-slate-900 text-white' : 'bg-zinc-100 text-zinc-500 hover:bg-zinc-200'}`}>Yes</button>
-                                                            <button onClick={() => { setHasUtilities(false); setIsCalculated(false); }} className={`px-3 py-1 text-[10px] font-bold rounded-md transition-all ${!hasUtilities ? 'bg-slate-900 text-white' : 'bg-zinc-100 text-zinc-500 hover:bg-zinc-200'}`}>No</button>
+                                                            <button onClick={() => { setHasUtilities(true); setIsCalculated(false); }} className={`px-3 py-1 text-[10px] font-bold rounded-md transition-all ${hasUtilities === true ? 'bg-slate-900 text-white' : 'bg-zinc-100 text-zinc-500 hover:bg-zinc-200'}`}>Yes</button>
+                                                            <button onClick={() => { setHasUtilities(false); setIsCalculated(false); }} className={`px-3 py-1 text-[10px] font-bold rounded-md transition-all ${hasUtilities === false ? 'bg-slate-900 text-white' : 'bg-zinc-100 text-zinc-500 hover:bg-zinc-200'}`}>No</button>
                                                         </div>
                                                     </div>
                                                 </motion.div>
