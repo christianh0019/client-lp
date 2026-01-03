@@ -880,8 +880,8 @@ export const BudgetCalculator: React.FC = () => {
                                     <div className="bg-purple-50 size-16 rounded-2xl flex items-center justify-center mx-auto mb-4 text-purple-600">
                                         <Lock size={28} />
                                     </div>
-                                    <h3 className="text-2xl font-serif font-bold text-slate-900 mb-2">Where can we send the numbers?</h3>
-                                    <p className="text-zinc-500 text-sm">It usually comes over within 15 seconds</p>
+                                    <h3 className="text-2xl font-serif font-bold text-slate-900 mb-2">I love it! But real quick...</h3>
+                                    <p className="text-zinc-500 text-sm">Where do we send your budget breakdown and recommended next steps?🤔 </p>
                                 </div>
 
                                 <div className="space-y-4">
@@ -935,7 +935,7 @@ export const BudgetCalculator: React.FC = () => {
                                         onClick={handleModalSubmit}
                                         className="w-full bg-slate-900 text-white font-bold py-4 rounded-xl hover:bg-gradient-to-r hover:from-slate-800 hover:to-slate-700 transition-all duration-300 shadow-lg shadow-slate-900/20 text-lg flex items-center justify-center gap-2 mt-4"
                                     >
-                                        Reveal My Budget
+                                        Send Me The Good Stuff
                                         <ArrowRight size={18} />
                                     </button>
                                 </div>
