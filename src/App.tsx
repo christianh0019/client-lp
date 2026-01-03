@@ -1,5 +1,4 @@
 import { Routes, Route } from 'react-router-dom';
-import SurveyForm from './components/SurveyForm';
 import { BudgetCalculator } from './components/BudgetCalculator';
 import { CheckCircle2 } from 'lucide-react';
 
@@ -26,24 +25,7 @@ function App() {
         <div className="container mx-auto">
 
           <Routes>
-            <Route path="/" element={
-              <div className="max-w-4xl mx-auto">
-                <div className="text-center mb-12 animate-fadeIn">
-                  <h1 className="text-4xl md:text-5xl font-serif font-bold text-slate-900 mb-6 leading-tight">
-                    Calculate Your Custom Home Budget <br className="hidden md:block" />
-                    <span className="text-transparent bg-clip-text bg-gradient-to-r from-purple-700 to-pink-600">
-                      In Seconds
-                    </span>
-                  </h1>
-                  <p className="text-lg text-slate-600 max-w-2xl mx-auto">
-                    Stop guessing. Use our AI-powered calculator to get real-time cost estimates based on your local market data. Answer 4 quick questions to unlock the tool.
-                  </p>
-                </div>
-
-                <SurveyForm />
-              </div>
-            } />
-
+            <Route path="/" element={<BudgetCalculator />} />
             <Route path="/calculator" element={<BudgetCalculator />} />
           </Routes>
 

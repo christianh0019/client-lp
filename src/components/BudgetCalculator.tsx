@@ -14,6 +14,11 @@ export const BudgetCalculator: React.FC = () => {
     const [city, setCity] = useState('');
     const [marketData, setMarketData] = useState<MarketData | null>(null);
 
+    // Contact State
+    const [name, setName] = useState('');
+    const [email, setEmail] = useState('');
+    const [phone, setPhone] = useState('');
+
     // UI State
     const [isLoadingMarket, setIsLoadingMarket] = useState(false);
     const [suggestions, setSuggestions] = useState<string[]>([]);
@@ -47,10 +52,16 @@ export const BudgetCalculator: React.FC = () => {
     };
 
     const handleCalculate = () => {
+        // Validation
+        if (!name || !email || !phone) {
+            setValidationError('Please enter your full name, email, and phone number.');
+            return;
+        }
         if (!city || city.length < 3) {
             setValidationError('Please enter a valid city to get accurate market data.');
             return;
         }
+
         if (!marketData) {
             handleRunMarketResearch();
         }
@@ -60,12 +71,15 @@ export const BudgetCalculator: React.FC = () => {
 
         // Data Capture
         console.log("CAPTURED LEAD DATA:", {
-            city,
-            totalBudget,
-            landOwned: hasLand,
-            landCost: !hasLand ? landCost : 0,
-            targetSqFt,
-            includeSoftCosts
+            contact: { name, email, phone },
+            project: {
+                city,
+                totalBudget,
+                landOwned: hasLand,
+                landCost: !hasLand ? landCost : 0,
+                targetSqFt,
+                includeSoftCosts
+            }
         });
 
         // Scroll to results
@@ -107,9 +121,8 @@ export const BudgetCalculator: React.FC = () => {
             {/* Header */}
             <div className="flex flex-col md:flex-row md:items-end justify-between mb-8 gap-6 animate-fadeIn">
                 <div className="space-y-3">
-                    <h2 className="text-4xl md:text-5xl font-serif tracking-tighter text-slate-900">Your Budget Blueprint</h2>
+                    <h2 className="text-4xl md:text-5xl font-serif tracking-tighter text-slate-900">Find Your Realistic Dream Home Budget in 30 Seconds</h2>
                     <div className="h-[1px] w-12 bg-zinc-300"></div>
-                    <p className="text-[10px] uppercase tracking-[0.2em] text-zinc-500">Align your dream with market reality</p>
                 </div>
             </div>
 
@@ -117,6 +130,38 @@ export const BudgetCalculator: React.FC = () => {
 
                 {/* LEFT COLUMN: Inputs */}
                 <div className="lg:col-span-5 space-y-8 animate-fadeIn" style={{ animationDelay: '0.1s' }}>
+
+                    {/* 0. Contact Info (New) */}
+                    <div className="bg-white border border-zinc-200 rounded-2xl p-6 shadow-sm space-y-4">
+                        <div className="flex items-center gap-3 mb-2">
+                            <div className="size-8 rounded-full bg-purple-500/10 flex items-center justify-center text-purple-600">
+                                <CheckCircle size={16} />
+                            </div>
+                            <h3 className="text-sm font-bold uppercase tracking-widest text-slate-900">Your Contact Info</h3>
+                        </div>
+                        <div className="space-y-3">
+                            <input
+                                placeholder="Full Name"
+                                className="w-full bg-zinc-50 border border-zinc-200 rounded-lg px-4 py-3 focus:outline-none focus:border-purple-500 transition-colors"
+                                value={name}
+                                onChange={(e) => setName(e.target.value)}
+                            />
+                            <input
+                                placeholder="Email Address"
+                                type="email"
+                                className="w-full bg-zinc-50 border border-zinc-200 rounded-lg px-4 py-3 focus:outline-none focus:border-purple-500 transition-colors"
+                                value={email}
+                                onChange={(e) => setEmail(e.target.value)}
+                            />
+                            <input
+                                placeholder="Phone Number"
+                                type="tel"
+                                className="w-full bg-zinc-50 border border-zinc-200 rounded-lg px-4 py-3 focus:outline-none focus:border-purple-500 transition-colors"
+                                value={phone}
+                                onChange={(e) => setPhone(e.target.value)}
+                            />
+                        </div>
+                    </div>
 
                     {/* 1. Market Research */}
                     <div className="bg-white border border-zinc-200 rounded-2xl p-6 relative shadow-sm">
