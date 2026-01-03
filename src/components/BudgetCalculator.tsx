@@ -5,6 +5,8 @@ import { MapPin, CheckCircle, AlertTriangle, ArrowRight, Layers, DollarSign, Loa
 import { AnimatePresence, motion } from 'framer-motion';
 import { ARTICLES, type Article } from '../data/knowledgeBaseData';
 
+import { ReportGenerator, type GeneratedReport } from '../services/ReportGenerator';
+
 export const BudgetCalculator: React.FC = () => {
     // Local State (replaced Contexts)
     const [totalBudget, setTotalBudget] = useState(1500000);
@@ -34,6 +36,10 @@ export const BudgetCalculator: React.FC = () => {
     const [validationError, setValidationError] = useState('');
     const [modalError, setModalError] = useState('');
 
+    // Report State
+    const [isAnalyzing, setIsAnalyzing] = useState(false);
+    const [generatedReport, setGeneratedReport] = useState<GeneratedReport | null>(null);
+
     // Educational Modal State
     const [viewingArticle, setViewingArticle] = useState<Article | null>(null);
 
@@ -60,6 +66,7 @@ export const BudgetCalculator: React.FC = () => {
     const handleCityChange = (e: React.ChangeEvent<HTMLInputElement>) => {
         setCity(e.target.value);
         setIsCalculated(false);
+        setGeneratedReport(null); // Reset report on change
     };
 
     const handleCalculateClick = () => {
@@ -92,9 +99,29 @@ export const BudgetCalculator: React.FC = () => {
 
         setModalError('');
 
-        // 4. Reveal Results
+        // 4. Reveal Results & Trigger Analysis
         setIsCalculated(true);
         setShowModal(false);
+        setIsAnalyzing(true);
+        setGeneratedReport(null);
+
+        // Simulate AI Analysis Delay
+        setTimeout(() => {
+            const report = ReportGenerator.generate({
+                breakdown,
+                feasibility,
+                inputs: {
+                    hasLand,
+                    hasPlans,
+                    hasEngineering,
+                    city,
+                    name,
+                    targetSqFt
+                }
+            });
+            setGeneratedReport(report);
+            setIsAnalyzing(false);
+        }, 2500);
 
         // Data Capture
         console.log("CAPTURED LEAD DATA:", {
@@ -572,6 +599,82 @@ export const BudgetCalculator: React.FC = () => {
                                     </div>
                                 )}
                             </motion.div>
+
+                            {/* SMART REPORT GENERATOR */}
+                            <AnimatePresence mode="wait">
+                                {isAnalyzing ? (
+                                    <motion.div
+                                        key="analyzing"
+                                        initial={{ opacity: 0 }}
+                                        animate={{ opacity: 1 }}
+                                        exit={{ opacity: 0 }}
+                                        className="bg-white rounded-3xl p-8 border border-zinc-200 shadow-sm flex flex-col items-center justify-center min-h-[300px] text-center"
+                                    >
+                                        <Loader2 size={32} className="animate-spin text-slate-900 mb-4" />
+                                        <h3 className="text-lg font-serif text-slate-900 mb-2">Analyzing your project via AI...</h3>
+                                        <div className="text-sm text-zinc-500 flex flex-col gap-1 items-center">
+                                            <span className="animate-pulse">Checking budget feasibility...</span>
+                                            <span className="animate-pulse delay-75">Reviewing soft cost allocations...</span>
+                                            <span className="animate-pulse delay-150">Generating personalized roadmap...</span>
+                                        </div>
+                                    </motion.div>
+                                ) : generatedReport ? (
+                                    <motion.div
+                                        key="report"
+                                        initial={{ opacity: 0, y: 20 }}
+                                        animate={{ opacity: 1, y: 0 }}
+                                        className="bg-white rounded-3xl p-8 border border-zinc-200 shadow-xl relative overflow-hidden"
+                                    >
+                                        <div className="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-blue-500 to-purple-500" />
+                                        <div className="flex items-center gap-2 mb-6">
+                                            <div className="size-8 rounded-full bg-slate-100 flex items-center justify-center">
+                                                <span className="text-lg">🤖</span>
+                                            </div>
+                                            <span className="text-xs font-bold uppercase tracking-widest text-slate-900">AI Project Analysis</span>
+                                        </div>
+
+                                        <h3 className="text-2xl font-serif text-slate-900 mb-4">{generatedReport.title}</h3>
+
+                                        <div className="prose prose-zinc prose-sm text-zinc-600 mb-8 max-w-none">
+                                            <p className="font-bold text-slate-900">{generatedReport.greeting}</p>
+                                            {generatedReport.paragraphs.map((p, i) => (
+                                                <p key={i}>{p}</p>
+                                            ))}
+                                        </div>
+
+                                        <div className="space-y-4 mb-8">
+                                            <h4 className="text-xs font-bold uppercase tracking-widest text-zinc-400">Your Recommended Action Plan</h4>
+                                            <div className="grid gap-3">
+                                                {generatedReport.actionPlan.map((item, i) => (
+                                                    <div key={i} className="flex gap-4 p-4 rounded-xl bg-zinc-50 border border-zinc-100">
+                                                        <div className="size-6 shrink-0 rounded-full bg-white border border-zinc-200 flex items-center justify-center text-xs font-bold text-slate-900 shadow-sm">
+                                                            {i + 1}
+                                                        </div>
+                                                        <div>
+                                                            <div className="font-bold text-sm text-slate-900">{item.step}</div>
+                                                            <div className="text-xs text-zinc-500">{item.description}</div>
+                                                        </div>
+                                                    </div>
+                                                ))}
+                                            </div>
+                                        </div>
+
+                                        <button
+                                            onClick={() => {
+                                                console.log("CTA CLICKED:", generatedReport.cta.action);
+                                                // Handle CTA logic here (e.g. open booking modal)
+                                            }}
+                                            className={`w-full py-4 rounded-xl font-bold text-white shadow-lg flex items-center justify-center gap-2 transition-transform hover:scale-[1.02] active:scale-[0.98] ${generatedReport.urgency === 'high'
+                                                ? 'bg-gradient-to-r from-orange-500 to-red-600 shadow-orange-500/30'
+                                                : 'bg-slate-900 hover:bg-slate-800 shadow-slate-900/20'
+                                                }`}
+                                        >
+                                            {generatedReport.cta.text} <ArrowRight size={18} />
+                                        </button>
+
+                                    </motion.div>
+                                ) : null}
+                            </AnimatePresence>
                         </>
                     ) : (
                         // Placeholder when waiting for calculation
