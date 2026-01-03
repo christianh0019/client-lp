@@ -240,7 +240,7 @@ export const BudgetCalculator: React.FC = () => {
                         Will Your Budget Actually Build Your Dream Home?
                     </h2>
                     <p className="text-zinc-500 text-lg leading-relaxed">
-                        In just 30 seconds, you'll find out what you can afford to build and exactly what to do next (it's completely free)
+                        In just 30 seconds, you'll find out what you can afford to build and exactly what to do next (it's completely free) 😊🏡
                     </p>
                 </div>
             </div>
