@@ -127,11 +127,19 @@ export const BudgetCalculator: React.FC = () => {
         return () => clearTimeout(timer);
     }, [city]);
 
-    const selectCity = (selectedCity: string) => {
+    const selectCity = async (selectedCity: string) => {
         setCity(selectedCity);
         setSuggestions([]);
         setShowSuggestions(false);
         setIsCalculated(false);
+
+        // Auto-fetch market data on selection
+        setIsLoadingMarket(true);
+        const data = await LocationCostService.getMarketData(selectedCity);
+        if (data) {
+            setMarketData(data);
+        }
+        setIsLoadingMarket(false);
     };
 
     const formatCurrency = (amount: number) => {
@@ -219,7 +227,6 @@ export const BudgetCalculator: React.FC = () => {
                                     placeholder="Enter City, State..."
                                     value={city}
                                     onChange={handleCityChange}
-                                    onKeyPress={(e) => e.key === 'Enter' && handleRunMarketResearch()}
                                     className={`bg-transparent border-b py-2 focus:outline-none text-zinc-900 placeholder:text-zinc-400 w-full font-serif text-lg ${validationError ? 'border-red-500' : 'border-zinc-200 focus:border-purple-500'}`}
                                 />
                                 {showSuggestions && (
@@ -236,13 +243,12 @@ export const BudgetCalculator: React.FC = () => {
                                     </div>
                                 )}
                             </div>
-                            <button
-                                onClick={handleRunMarketResearch}
-                                disabled={isLoadingMarket}
-                                className="bg-slate-900 hover:bg-slate-800 text-white rounded-lg px-4 flex items-center justify-center transition-all shrink-0"
-                            >
-                                {isLoadingMarket ? <Loader2 size={16} className="animate-spin" /> : <ArrowRight size={16} />}
-                            </button>
+                            {/* Loading Indicator (replaces button) */}
+                            {isLoadingMarket && (
+                                <div className="absolute right-0 top-2 flex items-center justify-center pointer-events-none">
+                                    <Loader2 size={16} className="animate-spin text-zinc-400" />
+                                </div>
+                            )}
                         </div>
 
                         {validationError && (
