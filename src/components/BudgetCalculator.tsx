@@ -303,12 +303,12 @@ export const BudgetCalculator: React.FC = () => {
                                     animate={{ opacity: 1, y: 0 }}
                                     className="space-y-2 bg-slate-50 p-4 rounded-xl border border-slate-100"
                                 >
-                                    <p className="text-xs text-zinc-600 leading-relaxed">
-                                        <span className="text-blue-600 font-bold">AI Insight:</span> {marketData.description}
+                                    <p className="text-xs text-zinc-600 leading-relaxed flex items-center gap-2">
+                                        <CheckCircle size={14} className="text-green-500" />
+                                        <span className="font-medium">Market Data Found for {city}</span>
                                     </p>
-                                    <div className="flex justify-between items-center text-xs pt-2 border-t border-slate-200">
-                                        <span className="text-zinc-500">Typical Range:</span>
-                                        <span className="font-mono text-zinc-800 font-bold">${marketData.low} - ${marketData.high} / sqft</span>
+                                    <div className="text-[10px] text-zinc-400 pl-6">
+                                        We'll use local cost data to analyze your budget.
                                     </div>
                                 </motion.div>
                             ) : (
@@ -322,11 +322,14 @@ export const BudgetCalculator: React.FC = () => {
                         {/* Total Budget */}
                         <div className="space-y-4">
                             <div className="flex justify-between items-center">
-                                <div className="flex items-center gap-2">
-                                    <label className="text-xs uppercase tracking-widest text-zinc-500">Total Investment Cap</label>
-                                    <button onClick={() => setViewingArticle(ARTICLES.find(a => a.id === 13) || null)} className="text-blue-400/80 hover:text-blue-500 transition-colors p-1 hover:bg-zinc-100 rounded-full">
-                                        <HelpCircle size={14} />
-                                    </button>
+                                <div className="flex flex-col gap-1">
+                                    <div className="flex items-center gap-2">
+                                        <label className="text-xs uppercase tracking-widest text-zinc-900 font-bold">All-In Budget</label>
+                                        <button onClick={() => setViewingArticle(ARTICLES.find(a => a.id === 13) || null)} className="text-blue-400/80 hover:text-blue-500 transition-colors p-1 hover:bg-zinc-100 rounded-full">
+                                            <HelpCircle size={14} />
+                                        </button>
+                                    </div>
+                                    <p className="text-[10px] text-zinc-400">Your total spending limit including land, home, and fees.</p>
                                 </div>
                                 <span className="text-xl font-serif text-zinc-900 font-bold">{formatCurrency(totalBudget)}</span>
                             </div>
