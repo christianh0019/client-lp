@@ -324,12 +324,18 @@ export const BudgetCalculator: React.FC = () => {
                             <div className="flex justify-between items-center">
                                 <div className="flex flex-col gap-1">
                                     <div className="flex items-center gap-2">
-                                        <label className="text-xs uppercase tracking-widest text-zinc-900 font-bold">All-In Budget</label>
+                                        <label className="text-xs uppercase tracking-widest text-zinc-900 font-bold">
+                                            {hasLand ? 'Construction Budget' : 'All-In Budget'}
+                                        </label>
                                         <button onClick={() => setViewingArticle(ARTICLES.find(a => a.id === 13) || null)} className="text-blue-400/80 hover:text-blue-500 transition-colors p-1 hover:bg-zinc-100 rounded-full">
                                             <HelpCircle size={14} />
                                         </button>
                                     </div>
-                                    <p className="text-[10px] text-zinc-400">Your total spending limit including land, home, and fees.</p>
+                                    <p className="text-[10px] text-zinc-400">
+                                        {hasLand
+                                            ? 'Your max spending limit for the build (excluding land value).'
+                                            : 'Your total spending limit including land, home, and fees.'}
+                                    </p>
                                 </div>
                                 <span className="text-xl font-serif text-zinc-900 font-bold">{formatCurrency(totalBudget)}</span>
                             </div>
