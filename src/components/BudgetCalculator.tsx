@@ -9,9 +9,9 @@ import { ReportGenerator, type GeneratedReport } from '../services/ReportGenerat
 
 export const BudgetCalculator: React.FC = () => {
     // Local State (replaced Contexts)
-    const [totalBudget, setTotalBudget] = useState(1500000);
-    const [landCost, setLandCost] = useState(300000);
-    const [targetSqFt, setTargetSqFt] = useState(3000);
+    const [totalBudget, setTotalBudget] = useState<number | null>(null);
+    const [landCost, setLandCost] = useState<number | null>(null);
+    const [targetSqFt, setTargetSqFt] = useState<number | null>(null);
 
     // Soft Cost States
     const [hasPlans, setHasPlans] = useState<boolean | null>(null);
@@ -46,9 +46,9 @@ export const BudgetCalculator: React.FC = () => {
 
     // Calculate Breakdown
     const breakdown = calculateBudgetBreakdown(
-        totalBudget,
-        hasLand === false ? landCost : 0,
-        targetSqFt,
+        totalBudget ?? 0,
+        hasLand === false ? (landCost ?? 0) : 0,
+        targetSqFt ?? 0,
         {
             hasPlans: hasPlans === true,
             hasEngineering: hasEngineering === true,
@@ -128,7 +128,7 @@ export const BudgetCalculator: React.FC = () => {
                     hasEngineering: hasEngineering === true,
                     city,
                     name,
-                    targetSqFt
+                    targetSqFt: targetSqFt ?? 0
                 }
             });
             setGeneratedReport(report);
@@ -368,14 +368,18 @@ export const BudgetCalculator: React.FC = () => {
                                                     <div className="space-y-2">
                                                         <div className="flex justify-between text-sm">
                                                             <span className="text-zinc-500">Estimated Land Cost</span>
-                                                            <span className="font-mono text-zinc-900 font-bold">{formatCurrency(landCost)}</span>
+                                                            {landCost ? (
+                                                                <span className="font-mono text-zinc-900 font-bold animate-in fade-in">{formatCurrency(landCost)}</span>
+                                                            ) : (
+                                                                <span className="text-zinc-400 italic text-xs">Slide to estimate</span>
+                                                            )}
                                                         </div>
                                                         <input
                                                             type="range"
                                                             min={0} max={1000000} step={5000}
-                                                            value={landCost}
+                                                            value={landCost ?? 0}
                                                             onChange={(e) => { setLandCost(Number(e.target.value)); setIsCalculated(false); }}
-                                                            className="w-full h-2 bg-zinc-100 rounded-lg appearance-none cursor-pointer accent-slate-600"
+                                                            className={`w-full h-2 rounded-lg appearance-none cursor-pointer ${landCost ? 'bg-zinc-200 accent-slate-600' : 'bg-zinc-100 accent-zinc-300'}`}
                                                         />
                                                     </div>
                                                 </motion.div>
@@ -480,14 +484,18 @@ export const BudgetCalculator: React.FC = () => {
                                                         : 'Your total spending limit including land, home, and fees.'}
                                                 </p>
                                             </div>
-                                            <span className="text-xl font-serif text-zinc-900 font-bold">{formatCurrency(totalBudget)}</span>
+                                            {totalBudget ? (
+                                                <span className="text-xl font-serif text-zinc-900 font-bold animate-in fade-in">{formatCurrency(totalBudget)}</span>
+                                            ) : (
+                                                <span className="text-zinc-400 italic text-sm">Slide to set budget</span>
+                                            )}
                                         </div>
                                         <input
                                             type="range"
                                             min={300000} max={5000000} step={10000}
-                                            value={totalBudget}
+                                            value={totalBudget ?? 1500000}
                                             onChange={(e) => { setTotalBudget(Number(e.target.value)); setIsCalculated(false); }}
-                                            className="w-full h-2 bg-zinc-200 rounded-lg appearance-none cursor-pointer accent-slate-900"
+                                            className={`w-full h-2 rounded-lg appearance-none cursor-pointer ${totalBudget ? 'bg-zinc-200 accent-slate-900' : 'bg-zinc-100 accent-zinc-300'}`}
                                         />
                                     </div>
 
@@ -500,21 +508,31 @@ export const BudgetCalculator: React.FC = () => {
                                                     <HelpCircle size={14} />
                                                 </button>
                                             </div>
-                                            <span className="text-xl font-serif text-zinc-900 font-bold">{targetSqFt.toLocaleString()} sq ft</span>
+                                            {targetSqFt ? (
+                                                <span className="text-xl font-serif text-zinc-900 font-bold animate-in fade-in">{targetSqFt.toLocaleString()} sq ft</span>
+                                            ) : (
+                                                <span className="text-zinc-400 italic text-sm">Slide to set size</span>
+                                            )}
                                         </div>
                                         <input
                                             type="range"
                                             min={1000} max={10000} step={50}
-                                            value={targetSqFt}
+                                            value={targetSqFt ?? 3000}
                                             onChange={(e) => { setTargetSqFt(Number(e.target.value)); setIsCalculated(false); }}
-                                            className="w-full h-2 bg-zinc-200 rounded-lg appearance-none cursor-pointer accent-slate-900"
+                                            className={`w-full h-2 rounded-lg appearance-none cursor-pointer ${targetSqFt ? 'bg-zinc-200 accent-slate-900' : 'bg-zinc-100 accent-zinc-300'}`}
                                         />
                                         {/* Visualizer Helper */}
                                         <div className="text-xs text-center text-zinc-500 bg-zinc-50 py-2 rounded-lg border border-zinc-100">
-                                            {targetSqFt < 2000 && "Comfortable 2-3 Bed, Small Lot"}
-                                            {targetSqFt >= 2000 && targetSqFt < 3000 && "Spacious Family Home, 3-4 Bed, Office"}
-                                            {targetSqFt >= 3000 && targetSqFt < 4500 && "Luxury Size, 4+ Bed, Rec Room, Large Garage"}
-                                            {targetSqFt >= 4500 && "Estate Size, Extensive Amenities"}
+                                            {targetSqFt ? (
+                                                <>
+                                                    {targetSqFt < 2000 && "Comfortable 2-3 Bed, Small Lot"}
+                                                    {targetSqFt >= 2000 && targetSqFt < 3000 && "Spacious Family Home, 3-4 Bed, Office"}
+                                                    {targetSqFt >= 3000 && targetSqFt < 4500 && "Luxury Size, 4+ Bed, Rec Room, Large Garage"}
+                                                    {targetSqFt >= 4500 && "Estate Size, Extensive Amenities"}
+                                                </>
+                                            ) : (
+                                                "Select size to see standard room count"
+                                            )}
                                         </div>
                                     </div>
                                 </motion.div>
@@ -526,14 +544,18 @@ export const BudgetCalculator: React.FC = () => {
                             {/* Validation / Progress Logic */}
                             {(() => {
                                 let completed = 0;
-                                let total = 4; // City, Land, Plans, Utilities
-                                if (hasPlans) total += 1; // Engineering becomes required
+                                let total = 6; // Market, LandStatus, Plans, Utilities, Budget, Size
+                                if (hasLand === false) total += 1; // Land Cost Slider
+                                if (hasPlans) total += 1; // Engineering
 
-                                if (city) completed++;
+                                if (marketData) completed++;
                                 if (hasLand !== null) completed++;
+                                if (hasLand === false && landCost !== null) completed++;
                                 if (hasPlans !== null) completed++;
                                 if (hasPlans && hasEngineering !== null) completed++;
                                 if (hasUtilities !== null) completed++;
+                                if (totalBudget !== null) completed++;
+                                if (targetSqFt !== null) completed++;
 
                                 const progress = Math.min(100, Math.round((completed / total) * 100));
                                 const isFormComplete = progress === 100;
@@ -542,7 +564,7 @@ export const BudgetCalculator: React.FC = () => {
                                     <>
                                         <div className="space-y-1">
                                             <div className="flex justify-between text-[10px] uppercase tracking-widest font-bold text-zinc-400">
-                                                <span>Profile Completion</span>
+                                                <span>Calculating budget and next steps...</span>
                                                 <span>{progress}%</span>
                                             </div>
                                             <div className="w-full bg-zinc-100 rounded-full h-1.5 overflow-hidden">
