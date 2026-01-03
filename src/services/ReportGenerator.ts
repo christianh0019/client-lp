@@ -119,7 +119,7 @@ export const ReportGenerator = {
                     { step: "Civil & Soils", description: "Address drainage, grading, and soil bearing capacity." },
                     { step: "Permit Submission", description: "Compile all technical documents for city approval." }
                 ];
-                cta = { text: "Get Your Engineering Quote", primary: true, action: 'book_consult' };
+                cta = { text: "Discuss Engineering & Permit Strategy", primary: true, action: 'book_consult' };
                 urgency = 'medium';
                 closing = "Navigating the technical requirements of engineering and permitting can be complex, but we handle it all the time. BuilderProject can coordinate the entire pre-construction team to get your project permit-ready faster. Let's discuss your timeline.";
                 break;
