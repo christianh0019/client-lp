@@ -11,6 +11,12 @@ export interface BudgetBreakdown {
 
 export type FeasibilityStatus = 'Unrealistic' | 'Tight' | 'Comfortable' | 'Luxury';
 
+export interface SoftCostInputs {
+    hasPlans: boolean;
+    hasEngineering: boolean;
+    hasUtilities: boolean;
+}
+
 /**
  * Calculates the "Hard Construction Budget" by stripping away land and soft costs.
  */
@@ -18,29 +24,26 @@ export const calculateBudgetBreakdown = (
     totalBudget: number,
     landCost: number,
     sqFt: number,
-    includeSoftCosts: boolean = true
+    inputs: SoftCostInputs
 ): BudgetBreakdown => {
     // 1. Deduct Land
     const budgetAfterLand = Math.max(0, totalBudget - landCost);
 
-    // 2. Calculate Soft Costs (applied to the remaining amount or total? Usually total project context, 
-    // but for simplicity in this tool, we often estimate soft costs as % of total construction. 
-    // Let's take % of the budgetAfterLand to be safe, or user might prefer % of total.)
-    // Method: Soft Costs are typically ~20% of the TOTAL project (excluding land). 
-    // So if we have X amount left for "House + Soft", then House = X / 1.20
+    // 2. Calculate Soft Costs granularly
+    // Base (Management/Overhead): 5%
+    // Need Plans: +5%
+    // Need Engineering: +5%
+    // Need Utilities: +5%
 
-    let softCostEstimate = 0;
-    let hardConstructionBudget = budgetAfterLand;
+    let softCostPct = 0.05; // Base 5%
 
-    if (includeSoftCosts) {
-        // X = Hard + Soft
-        // Soft = 20% of X? Or 20% of Hard? 
-        // Industry rule of thumb: Soft costs are ~15-20% of CONSTRUCTION cost.
-        // So TotalConstruction = Hard * 1.20
-        // Hard = TotalAvailable / 1.20
-        hardConstructionBudget = budgetAfterLand / (1 + DEFAULT_SOFT_COST_PCT);
-        softCostEstimate = budgetAfterLand - hardConstructionBudget;
-    }
+    if (!inputs.hasPlans) softCostPct += 0.05;
+    if (!inputs.hasEngineering) softCostPct += 0.05;
+    if (!inputs.hasUtilities) softCostPct += 0.05;
+
+    // Calculate
+    const hardConstructionBudget = budgetAfterLand / (1 + softCostPct);
+    const softCostEstimate = budgetAfterLand - hardConstructionBudget;
 
     // 3. Per Sq Ft
     const hardCostPerSqFt = sqFt > 0 ? hardConstructionBudget / sqFt : 0;

@@ -10,7 +10,11 @@ export const BudgetCalculator: React.FC = () => {
     const [totalBudget, setTotalBudget] = useState(1500000);
     const [landCost, setLandCost] = useState(300000);
     const [targetSqFt, setTargetSqFt] = useState(3000);
-    const [includeSoftCosts, setIncludeSoftCosts] = useState(true);
+
+    // Soft Cost States
+    const [hasPlans, setHasPlans] = useState(false);
+    const [hasEngineering, setHasEngineering] = useState(false);
+    const [hasUtilities, setHasUtilities] = useState(false);
     const [hasLand, setHasLand] = useState(false);
     const [city, setCity] = useState('');
     const [marketData, setMarketData] = useState<MarketData | null>(null);
@@ -34,7 +38,7 @@ export const BudgetCalculator: React.FC = () => {
     const [viewingArticle, setViewingArticle] = useState<Article | null>(null);
 
     // Calculate Breakdown
-    const breakdown = calculateBudgetBreakdown(totalBudget, !hasLand ? landCost : 0, targetSqFt, includeSoftCosts);
+    const breakdown = calculateBudgetBreakdown(totalBudget, !hasLand ? landCost : 0, targetSqFt, { hasPlans, hasEngineering, hasUtilities });
 
     // Calculate Feasibility
     const feasibility = breakdown.hardCostPerSqFt > 0 && marketData
@@ -101,7 +105,8 @@ export const BudgetCalculator: React.FC = () => {
                 landOwned: hasLand,
                 landCost: !hasLand ? landCost : 0,
                 targetSqFt,
-                includeSoftCosts
+
+                softCosts: { hasPlans, hasEngineering, hasUtilities }
             }
         });
 
@@ -341,23 +346,42 @@ export const BudgetCalculator: React.FC = () => {
                             </AnimatePresence>
                         </div>
 
-                        {/* Soft Cost Toggle */}
-                        <div className="flex items-center justify-between p-4 border border-zinc-200 bg-white rounded-xl hover:bg-zinc-50 transition-colors cursor-pointer shadow-sm" onClick={() => { setIncludeSoftCosts(!includeSoftCosts); setIsCalculated(false); }}>
-                            <div className="flex items-center gap-3">
-                                <div className={`size-4 border rounded flex items-center justify-center transition-colors ${includeSoftCosts ? 'bg-emerald-500 border-emerald-500' : 'border-zinc-400'} `}>
-                                    {includeSoftCosts && <CheckCircle size={10} className="text-white" />}
+                        {/* Soft Cost Logic */}
+                        <div className="bg-white border border-zinc-200 rounded-xl p-4 space-y-4 shadow-sm">
+                            <div className="flex items-center gap-2 mb-2">
+                                <span className="text-xs uppercase tracking-widest text-zinc-900 font-bold">Soft Cost Breakdown</span>
+                                <button
+                                    onClick={(e) => { e.stopPropagation(); setViewingArticle(ARTICLES.find(a => a.id === 9) || null); }}
+                                    className="text-blue-400/80 hover:text-blue-500 transition-colors p-1 hover:bg-zinc-100 rounded-full"
+                                >
+                                    <HelpCircle size={14} />
+                                </button>
+                            </div>
+
+                            {/* Question 1: Plans */}
+                            <div className="flex justify-between items-center py-2 border-b border-zinc-100 last:border-0">
+                                <span className="text-xs text-zinc-600">Do you have architectural plans?</span>
+                                <div className="flex gap-2">
+                                    <button onClick={() => { setHasPlans(true); setIsCalculated(false); }} className={`px-3 py-1 text-[10px] font-bold rounded-md transition-all ${hasPlans ? 'bg-slate-900 text-white' : 'bg-zinc-100 text-zinc-500 hover:bg-zinc-200'}`}>Yes</button>
+                                    <button onClick={() => { setHasPlans(false); setIsCalculated(false); }} className={`px-3 py-1 text-[10px] font-bold rounded-md transition-all ${!hasPlans ? 'bg-slate-900 text-white' : 'bg-zinc-100 text-zinc-500 hover:bg-zinc-200'}`}>No</button>
                                 </div>
-                                <div className="flex flex-col">
-                                    <span className="text-xs font-medium text-zinc-900">Include Soft Costs?</span>
-                                    <div className="flex items-center gap-2">
-                                        <span className="text-[10px] text-zinc-500">Permits, Design, Engineering (~20%)</span>
-                                        <button
-                                            onClick={(e) => { e.stopPropagation(); setViewingArticle(ARTICLES.find(a => a.id === 9) || null); }}
-                                            className="text-blue-400/80 hover:text-blue-500 transition-colors p-1 hover:bg-zinc-100 rounded-full"
-                                        >
-                                            <HelpCircle size={14} />
-                                        </button>
-                                    </div>
+                            </div>
+
+                            {/* Question 2: Engineering */}
+                            <div className="flex justify-between items-center py-2 border-b border-zinc-100 last:border-0">
+                                <span className="text-xs text-zinc-600">Have you engineered the project?</span>
+                                <div className="flex gap-2">
+                                    <button onClick={() => { setHasEngineering(true); setIsCalculated(false); }} className={`px-3 py-1 text-[10px] font-bold rounded-md transition-all ${hasEngineering ? 'bg-slate-900 text-white' : 'bg-zinc-100 text-zinc-500 hover:bg-zinc-200'}`}>Yes</button>
+                                    <button onClick={() => { setHasEngineering(false); setIsCalculated(false); }} className={`px-3 py-1 text-[10px] font-bold rounded-md transition-all ${!hasEngineering ? 'bg-slate-900 text-white' : 'bg-zinc-100 text-zinc-500 hover:bg-zinc-200'}`}>No</button>
+                                </div>
+                            </div>
+
+                            {/* Question 3: Utilities */}
+                            <div className="flex justify-between items-center py-2 border-b border-zinc-100 last:border-0">
+                                <span className="text-xs text-zinc-600">Is the lot developed (utilities on site)?</span>
+                                <div className="flex gap-2">
+                                    <button onClick={() => { setHasUtilities(true); setIsCalculated(false); }} className={`px-3 py-1 text-[10px] font-bold rounded-md transition-all ${hasUtilities ? 'bg-slate-900 text-white' : 'bg-zinc-100 text-zinc-500 hover:bg-zinc-200'}`}>Yes</button>
+                                    <button onClick={() => { setHasUtilities(false); setIsCalculated(false); }} className={`px-3 py-1 text-[10px] font-bold rounded-md transition-all ${!hasUtilities ? 'bg-slate-900 text-white' : 'bg-zinc-100 text-zinc-500 hover:bg-zinc-200'}`}>No</button>
                                 </div>
                             </div>
                         </div>
@@ -428,14 +452,12 @@ export const BudgetCalculator: React.FC = () => {
 
                                     {/* Deductions Connector */}
                                     <div className="pl-10 ml-6 border-l-2 border-dashed border-zinc-200 space-y-4 py-4">
-                                        {includeSoftCosts && (
-                                            <div className="flex justify-between items-center text-orange-500 px-4 bg-orange-50/50 py-1 rounded-lg">
-                                                <div className="flex items-center gap-2">
-                                                    <span className="text-xs uppercase tracking-widest">- Soft Costs (~20%)</span>
-                                                </div>
-                                                <span className="font-mono text-sm font-bold">({formatCurrency(breakdown.softCostEstimate)})</span>
+                                        <div className="flex justify-between items-center text-orange-500 px-4 bg-orange-50/50 py-1 rounded-lg">
+                                            <div className="flex items-center gap-2">
+                                                <span className="text-xs uppercase tracking-widest">- Soft Costs ({(breakdown.softCostEstimate / breakdown.hardConstructionBudget * 100).toFixed(0)}%)</span>
                                             </div>
-                                        )}
+                                            <span className="font-mono text-sm font-bold">({formatCurrency(breakdown.softCostEstimate)})</span>
+                                        </div>
                                         {!hasLand && (
                                             <div className="flex justify-between items-center text-red-500 px-4 bg-red-50/50 py-1 rounded-lg">
                                                 <div className="flex items-center gap-2">
