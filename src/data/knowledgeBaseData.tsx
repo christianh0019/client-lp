@@ -271,9 +271,9 @@ export const ARTICLES: Article[] = [
     },
     {
         id: 10,
-        title: "The Dirt is Deceiving: Budgeting for Land",
-        subtitle: "Why 'Free Land' is a myth and what lies beneath.",
-        readTime: "10 min read",
+        title: "Do You Own Land?",
+        subtitle: "Why this is a key question for your budget.",
+        readTime: "3 min read",
         category: "Budgeting",
         gradient: "from-green-800 to-emerald-950",
         icon: Compass,
@@ -281,48 +281,40 @@ export const ARTICLES: Article[] = [
         content: (
             <div className="space-y-6 text-zinc-600 leading-relaxed font-light">
                 <p>
-                    There is an old saying in development: <strong>"You make your money when you buy."</strong>
+                    Every dream home starts with a special piece of land. Think of it as the canvas where your masterpiece will be painted. Whether you have your canvas ready or are still searching for the perfect one, knowing where your home will be built is a huge part of planning your budget.
                 </p>
                 <p>
-                    But for a custom home builder, the saying should be: "You lose your shirt if you don't know what's underground."
-                    Buying raw land is the most risky part of the entire process because dirt is rarely just dirt.
+                    This question helps us understand where you are in your home-building journey and gives us important clues to provide you with a more accurate estimate.
                 </p>
 
-                <h3 className="text-2xl text-slate-900 font-serif mt-8 mb-4">The "Hidden" Price Tag</h3>
+                <h3 className="text-2xl text-slate-900 font-serif mt-8 mb-4">If your answer is: "Yes, I own land!"</h3>
                 <p>
-                    Let's say you see a beautiful lot listed for $100,000. It looks like a steal. But here is the math you need to do before you sign:
+                    That’s fantastic! You’ve already taken one of the biggest steps in the custom home journey.
                 </p>
-
-                <ul className="space-y-4 mt-6 mb-8">
-                    <li className="flex gap-4 items-start">
-                        <div className="min-w-8 h-8 rounded-full bg-red-50 text-red-600 flex items-center justify-center font-bold">1</div>
-                        <div>
-                            <strong className="text-slate-900 block">Utility Connections ($10k - $50k+)</strong>
-                            <p className="text-sm mt-1">Is there a sewer line? Or do you need a septic system ($30k)? Is water at the street? Or do you need a well ($20k)? Power poles can cost $5,000 each to install if they aren't close.</p>
-                        </div>
-                    </li>
-                    <li className="flex gap-4 items-start">
-                        <div className="min-w-8 h-8 rounded-full bg-red-50 text-red-600 flex items-center justify-center font-bold">2</div>
-                        <div>
-                            <strong className="text-slate-900 block">Topography & Slope ($10k - $100k)</strong>
-                            <p className="text-sm mt-1">That view is amazing, but a steep slope requires retaining walls, engineered foundations, and extra concrete pumping. Flat lots are boring, but cheap to build. Sloped lots are sexy, but expensive.</p>
-                        </div>
-                    </li>
-                    <li className="flex gap-4 items-start">
-                        <div className="min-w-8 h-8 rounded-full bg-red-50 text-red-600 flex items-center justify-center font-bold">3</div>
-                        <div>
-                            <strong className="text-slate-900 block">Soil Quality ($5k - $50k)</strong>
-                            <p className="text-sm mt-1">If your soil is "expansive clay," it moves when it gets wet. You'll need expensive piers (caissons) drilled deep into the ground to keep your house from cracking in half.</p>
-                        </div>
-                    </li>
-                </ul>
-
-                <h3 className="text-2xl text-slate-900 font-serif mt-8 mb-4">The Meaning of "Need Land"</h3>
                 <p>
-                    In our Budget Creator, selecting "Need Land" subtracts these costs from your budget. If you have $1.5M and need to buy a $300k lot, you are now a $1.2M home builder.
+                    Having your land helps us narrow down the budget significantly. The location, size, and even the shape of your property tell us a lot about the project. For example, some land is flat and ready to build on, while other land might have hills or trees that need to be worked with. Knowing these details helps us create a smarter, more accurate budget for you from the very beginning.
                 </p>
-                <p className="mt-4">
-                    <strong>The Golden Rule:</strong> Never buy land without a "Feasibility Study" period (usually 30-60 days) to get real quotes on site prep.
+
+                <h3 className="text-2xl text-slate-900 font-serif mt-8 mb-4">If your answer is: "No, I'm still looking."</h3>
+                <p>
+                    You are in the perfect place to start! Most people begin dreaming about their home long before they find the land for it, and that’s completely okay.
+                </p>
+
+                <div className="bg-emerald-50 p-6 rounded-2xl border border-emerald-100 my-8">
+                    <p className="text-emerald-700 font-medium text-lg mb-2">
+                        Factor in the Cost
+                    </p>
+                    <p className="text-sm text-zinc-600">
+                        Answering "no" simply tells us that we need to factor the cost of buying land into your <strong>"Total All-In Investment."</strong> The search for the perfect spot is one of the most exciting parts of the adventure, and we can help guide you. Finding the right land is just as important as designing the right home.
+                    </p>
+                </div>
+
+                <h3 className="text-2xl text-slate-900 font-serif mt-8 mb-4">Why Your Land Matters So Much</h3>
+                <p>
+                    The land you choose affects more than just the purchase price. It also influences the cost of getting the property ready for your home. This includes connecting utilities like water and power, and preparing the ground for a solid foundation.
+                </p>
+                <p>
+                    By telling us whether you own land, you help us give you the clearest possible picture of your investment. It’s the first step in making sure your budget is built on a solid foundation—just like your future home.
                 </p>
             </div>
         )
