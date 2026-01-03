@@ -14,9 +14,9 @@ export const BudgetCalculator: React.FC = () => {
     const [targetSqFt, setTargetSqFt] = useState(3000);
 
     // Soft Cost States
-    const [hasPlans, setHasPlans] = useState(false);
-    const [hasEngineering, setHasEngineering] = useState(false);
-    const [hasUtilities, setHasUtilities] = useState(false);
+    const [hasPlans, setHasPlans] = useState<boolean | null>(null);
+    const [hasEngineering, setHasEngineering] = useState<boolean | null>(null);
+    const [hasUtilities, setHasUtilities] = useState<boolean | null>(null);
     const [hasLand, setHasLand] = useState<boolean | null>(null);
     const [city, setCity] = useState('');
     const [marketData, setMarketData] = useState<MarketData | null>(null);
@@ -45,7 +45,16 @@ export const BudgetCalculator: React.FC = () => {
     const [viewingArticle, setViewingArticle] = useState<Article | null>(null);
 
     // Calculate Breakdown
-    const breakdown = calculateBudgetBreakdown(totalBudget, hasLand === false ? landCost : 0, targetSqFt, { hasPlans, hasEngineering, hasUtilities });
+    const breakdown = calculateBudgetBreakdown(
+        totalBudget,
+        hasLand === false ? landCost : 0,
+        targetSqFt,
+        {
+            hasPlans: hasPlans === true,
+            hasEngineering: hasEngineering === true,
+            hasUtilities: hasUtilities === true
+        }
+    );
 
     // Calculate Feasibility
     const feasibility = breakdown.hardCostPerSqFt > 0 && marketData
@@ -114,9 +123,9 @@ export const BudgetCalculator: React.FC = () => {
                 breakdown,
                 feasibility,
                 inputs: {
-                    hasLand,
-                    hasPlans,
-                    hasEngineering,
+                    hasLand: hasLand === true,
+                    hasPlans: hasPlans === true,
+                    hasEngineering: hasEngineering === true,
                     city,
                     name,
                     targetSqFt
@@ -512,15 +521,61 @@ export const BudgetCalculator: React.FC = () => {
                             )}
                         </AnimatePresence>
 
-                        {/* CALCULATE BUTTON */}
-                        <div className="pt-4">
-                            <button
-                                onClick={handleCalculateClick}
-                                className="w-full bg-slate-900 text-white font-bold py-4 rounded-xl hover:bg-gradient-to-r hover:from-slate-800 hover:to-slate-700 transition-all duration-300 shadow-lg shadow-slate-900/20 text-lg flex items-center justify-center gap-3"
-                            >
-                                <DollarSign size={20} />
-                                Calculate My Budget Breakdown
-                            </button>
+                        {/* CALCULATE BUTTON & PROGRESS */}
+                        <div className="pt-4 space-y-3">
+                            {/* Validation / Progress Logic */}
+                            {(() => {
+                                let completed = 0;
+                                let total = 4; // City, Land, Plans, Utilities
+                                if (hasPlans) total += 1; // Engineering becomes required
+
+                                if (city) completed++;
+                                if (hasLand !== null) completed++;
+                                if (hasPlans !== null) completed++;
+                                if (hasPlans && hasEngineering !== null) completed++;
+                                if (hasUtilities !== null) completed++;
+
+                                const progress = Math.min(100, Math.round((completed / total) * 100));
+                                const isFormComplete = progress === 100;
+
+                                return (
+                                    <>
+                                        <div className="space-y-1">
+                                            <div className="flex justify-between text-[10px] uppercase tracking-widest font-bold text-zinc-400">
+                                                <span>Profile Completion</span>
+                                                <span>{progress}%</span>
+                                            </div>
+                                            <div className="w-full bg-zinc-100 rounded-full h-1.5 overflow-hidden">
+                                                <div
+                                                    className={`h-full transition-all duration-500 ease-out ${isFormComplete ? 'bg-green-500' : 'bg-slate-900'}`}
+                                                    style={{ width: `${progress}%` }}
+                                                />
+                                            </div>
+                                        </div>
+
+                                        <button
+                                            onClick={handleCalculateClick}
+                                            disabled={!isFormComplete}
+                                            className={`w-full font-bold py-4 rounded-xl text-lg flex items-center justify-center gap-3 transition-all duration-300 shadow-lg ${isFormComplete
+                                                ? 'bg-slate-900 text-white hover:bg-gradient-to-r hover:from-slate-800 hover:to-slate-700 shadow-slate-900/20 cursor-pointer hover:shadow-xl hover:scale-[1.01]'
+                                                : 'bg-zinc-100 text-zinc-400 cursor-not-allowed shadow-none'
+                                                }`}
+                                        >
+                                            {isFormComplete ? (
+                                                <>
+                                                    <DollarSign size={20} />
+                                                    Calculate My Budget Breakdown
+                                                </>
+                                            ) : (
+                                                <>
+                                                    <Lock size={16} />
+                                                    Complete All Fields to Calculate
+                                                </>
+                                            )}
+                                        </button>
+                                    </>
+                                );
+                            })()}
                         </div>
 
                     </div>
