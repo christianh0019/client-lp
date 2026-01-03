@@ -27,6 +27,7 @@ export interface GeneratedReport {
         action: 'book_consult' | 'find_land' | 'get_bid' | 'assess_viability';
     };
     urgency: 'high' | 'medium' | 'low';
+    closing: string;
 }
 
 export const ReportGenerator = {
@@ -56,6 +57,7 @@ export const ReportGenerator = {
         let actionPlan: { step: string; description: string }[] = [];
         let cta: GeneratedReport['cta'] = { text: 'Schedule Free Consultation', primary: true, action: 'book_consult' };
         let urgency: 'high' | 'medium' | 'low' = 'medium';
+        let closing = '';
 
         switch (coreStatus) {
             case 'unrealistic':
@@ -71,6 +73,7 @@ export const ReportGenerator = {
                 ];
                 cta = { text: "Book a Budget Viability Call", primary: true, action: 'assess_viability' };
                 urgency = 'high';
+                closing = "BuilderProject specializes in value engineering tailored to your specific financial goals. We can help you identify exactly where to adjust your scope to make this project viable without losing the features you love. We'd love to walk you through a few options.";
                 break;
 
             case 'no_land':
@@ -86,6 +89,7 @@ export const ReportGenerator = {
                 ];
                 cta = { text: "Start Your Land Search", primary: true, action: 'find_land' };
                 urgency = 'medium';
+                closing = "Finding the perfect lot is the first step to a successful build, and it's something we help clients with every day. BuilderProject can help you evaluate potential properties for hidden costs before you make an offer. Let's chat about what you're looking for.";
                 break;
 
             case 'design_needed':
@@ -101,6 +105,7 @@ export const ReportGenerator = {
                 ];
                 cta = { text: "Schedule Free Design Consultation", primary: true, action: 'book_consult' };
                 urgency = 'medium';
+                closing = "At BuilderProject, we believe design should be driven by both creativity and cost-awareness. We can help you start the design process with a clear budget in mind so you don't fall in love with a home that's expensive to build. We'd love to hear your ideas.";
                 break;
 
             case 'engineering_needed':
@@ -116,6 +121,7 @@ export const ReportGenerator = {
                 ];
                 cta = { text: "Get Your Engineering Quote", primary: true, action: 'book_consult' };
                 urgency = 'medium';
+                closing = "Navigating the technical requirements of engineering and permitting can be complex, but we handle it all the time. BuilderProject can coordinate the entire pre-construction team to get your project permit-ready faster. Let's discuss your timeline.";
                 break;
 
             case 'ready_to_build':
@@ -131,6 +137,7 @@ export const ReportGenerator = {
                 ];
                 cta = { text: "Request a Construction Bid", primary: true, action: 'get_bid' };
                 urgency = 'high';
+                closing = "Since you're ready to build, we're ready to bid. BuilderProject offers transparent, detailed construction management to bring your fully-formed vision to life on time and on budget. We'd love to review your plans and give you a firm number.";
                 break;
         }
 
@@ -140,7 +147,8 @@ export const ReportGenerator = {
             paragraphs,
             actionPlan,
             cta,
-            urgency
+            urgency,
+            closing
         };
     }
 };

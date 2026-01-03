@@ -659,6 +659,12 @@ export const BudgetCalculator: React.FC = () => {
                                             </div>
                                         </div>
 
+                                        <div className="bg-blue-50/50 p-6 rounded-2xl mb-6">
+                                            <p className="text-sm text-zinc-700 leading-relaxed font-medium">
+                                                {generatedReport.closing}
+                                            </p>
+                                        </div>
+
                                         <button
                                             onClick={() => {
                                                 console.log("CTA CLICKED:", generatedReport.cta.action);
