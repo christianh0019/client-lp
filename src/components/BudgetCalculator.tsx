@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { LocationCostService, type MarketData } from '../services/LocationCostService';
 import { calculateBudgetBreakdown, getFeasibilityStatus as checkFeasibility } from '../services/BudgetLogic';
-import { MapPin, CheckCircle, AlertTriangle, ArrowRight, Layers, DollarSign, Loader2 } from 'lucide-react';
+import { MapPin, CheckCircle, AlertTriangle, ArrowRight, Layers, DollarSign, Loader2, X, Lock } from 'lucide-react';
 import { AnimatePresence, motion } from 'framer-motion';
 
 export const BudgetCalculator: React.FC = () => {
@@ -18,13 +18,16 @@ export const BudgetCalculator: React.FC = () => {
     const [name, setName] = useState('');
     const [email, setEmail] = useState('');
     const [phone, setPhone] = useState('');
+    const [agreedToTerms, setAgreedToTerms] = useState(false);
 
     // UI State
     const [isLoadingMarket, setIsLoadingMarket] = useState(false);
     const [suggestions, setSuggestions] = useState<string[]>([]);
     const [showSuggestions, setShowSuggestions] = useState(false);
     const [isCalculated, setIsCalculated] = useState(false);
+    const [showModal, setShowModal] = useState(false);
     const [validationError, setValidationError] = useState('');
+    const [modalError, setModalError] = useState('');
 
     // Calculate Breakdown
     const breakdown = calculateBudgetBreakdown(totalBudget, !hasLand ? landCost : 0, targetSqFt, includeSoftCosts);
@@ -51,12 +54,8 @@ export const BudgetCalculator: React.FC = () => {
         setIsCalculated(false);
     };
 
-    const handleCalculate = () => {
-        // Validation
-        if (!name || !email || !phone) {
-            setValidationError('Please enter your full name, email, and phone number.');
-            return;
-        }
+    const handleCalculateClick = () => {
+        // 1. Initial Validation (Just City)
         if (!city || city.length < 3) {
             setValidationError('Please enter a valid city to get accurate market data.');
             return;
@@ -67,11 +66,31 @@ export const BudgetCalculator: React.FC = () => {
         }
 
         setValidationError('');
+
+        // 2. Open Modal for Lead Capture
+        setShowModal(true);
+    };
+
+    const handleModalSubmit = () => {
+        // 3. Final Validation (Contact Info)
+        if (!name || !email || !phone) {
+            setModalError('Please fill in all fields.');
+            return;
+        }
+        if (!agreedToTerms) {
+            setModalError('Please agree to receive communication to proceed.');
+            return;
+        }
+
+        setModalError('');
+
+        // 4. Reveal Results
         setIsCalculated(true);
+        setShowModal(false);
 
         // Data Capture
         console.log("CAPTURED LEAD DATA:", {
-            contact: { name, email, phone },
+            contact: { name, email, phone, agreedToTerms },
             project: {
                 city,
                 totalBudget,
@@ -86,7 +105,7 @@ export const BudgetCalculator: React.FC = () => {
         setTimeout(() => {
             document.getElementById('results-section')?.scrollIntoView({ behavior: 'smooth' });
         }, 100);
-    };
+    }
 
     // Debounced Autocomplete
     useEffect(() => {
@@ -130,38 +149,6 @@ export const BudgetCalculator: React.FC = () => {
 
                 {/* LEFT COLUMN: Inputs */}
                 <div className="lg:col-span-5 space-y-8 animate-fadeIn" style={{ animationDelay: '0.1s' }}>
-
-                    {/* 0. Contact Info (New) */}
-                    <div className="bg-white border border-zinc-200 rounded-2xl p-6 shadow-sm space-y-4">
-                        <div className="flex items-center gap-3 mb-2">
-                            <div className="size-8 rounded-full bg-purple-500/10 flex items-center justify-center text-purple-600">
-                                <CheckCircle size={16} />
-                            </div>
-                            <h3 className="text-sm font-bold uppercase tracking-widest text-slate-900">Your Contact Info</h3>
-                        </div>
-                        <div className="space-y-3">
-                            <input
-                                placeholder="Full Name"
-                                className="w-full bg-zinc-50 border border-zinc-200 rounded-lg px-4 py-3 focus:outline-none focus:border-purple-500 transition-colors"
-                                value={name}
-                                onChange={(e) => setName(e.target.value)}
-                            />
-                            <input
-                                placeholder="Email Address"
-                                type="email"
-                                className="w-full bg-zinc-50 border border-zinc-200 rounded-lg px-4 py-3 focus:outline-none focus:border-purple-500 transition-colors"
-                                value={email}
-                                onChange={(e) => setEmail(e.target.value)}
-                            />
-                            <input
-                                placeholder="Phone Number"
-                                type="tel"
-                                className="w-full bg-zinc-50 border border-zinc-200 rounded-lg px-4 py-3 focus:outline-none focus:border-purple-500 transition-colors"
-                                value={phone}
-                                onChange={(e) => setPhone(e.target.value)}
-                            />
-                        </div>
-                    </div>
 
                     {/* 1. Market Research */}
                     <div className="bg-white border border-zinc-200 rounded-2xl p-6 relative shadow-sm">
@@ -334,7 +321,7 @@ export const BudgetCalculator: React.FC = () => {
                         {/* CALCULATE BUTTON */}
                         <div className="pt-4">
                             <button
-                                onClick={handleCalculate}
+                                onClick={handleCalculateClick}
                                 className="w-full bg-slate-900 text-white font-bold py-4 rounded-xl hover:bg-gradient-to-r hover:from-slate-800 hover:to-slate-700 transition-all duration-300 shadow-lg shadow-slate-900/20 text-lg flex items-center justify-center gap-3"
                             >
                                 <DollarSign size={20} />
@@ -468,6 +455,102 @@ export const BudgetCalculator: React.FC = () => {
 
                 </div>
             </div>
+
+            {/* Lead Capture Modal */}
+            <AnimatePresence>
+                {showModal && (
+                    <div className="fixed inset-0 z-[100] flex items-center justify-center p-4">
+                        {/* Backdrop */}
+                        <motion.div
+                            initial={{ opacity: 0 }}
+                            animate={{ opacity: 1 }}
+                            exit={{ opacity: 0 }}
+                            onClick={() => setShowModal(false)}
+                            className="absolute inset-0 bg-slate-900/60 backdrop-blur-sm"
+                        />
+
+                        {/* Modal Content */}
+                        <motion.div
+                            initial={{ opacity: 0, scale: 0.95, y: 20 }}
+                            animate={{ opacity: 1, scale: 1, y: 0 }}
+                            exit={{ opacity: 0, scale: 0.95, y: 20 }}
+                            className="bg-white z-10 w-full max-w-md rounded-3xl shadow-2xl overflow-hidden"
+                        >
+                            <div className="p-8">
+                                <div className="flex justify-end mb-2">
+                                    <button onClick={() => setShowModal(false)} className="text-zinc-400 hover:text-zinc-900 transition-colors">
+                                        <X size={20} />
+                                    </button>
+                                </div>
+
+                                <div className="text-center mb-8">
+                                    <div className="bg-purple-50 size-16 rounded-2xl flex items-center justify-center mx-auto mb-4 text-purple-600">
+                                        <Lock size={28} />
+                                    </div>
+                                    <h3 className="text-2xl font-serif font-bold text-slate-900 mb-2">Where can we send the numbers?</h3>
+                                    <p className="text-zinc-500 text-sm">It usually comes over within 15 seconds</p>
+                                </div>
+
+                                <div className="space-y-4">
+                                    <input
+                                        placeholder="Full Name"
+                                        className="w-full bg-zinc-50 border border-zinc-200 rounded-lg px-4 py-3 focus:outline-none focus:border-purple-500 transition-colors"
+                                        value={name}
+                                        onChange={(e) => setName(e.target.value)}
+                                        autoFocus
+                                    />
+                                    <input
+                                        placeholder="Email Address"
+                                        type="email"
+                                        className="w-full bg-zinc-50 border border-zinc-200 rounded-lg px-4 py-3 focus:outline-none focus:border-purple-500 transition-colors"
+                                        value={email}
+                                        onChange={(e) => setEmail(e.target.value)}
+                                    />
+                                    <input
+                                        placeholder="Phone Number"
+                                        type="tel"
+                                        className="w-full bg-zinc-50 border border-zinc-200 rounded-lg px-4 py-3 focus:outline-none focus:border-purple-500 transition-colors"
+                                        value={phone}
+                                        onChange={(e) => setPhone(e.target.value)}
+                                    />
+
+                                    <div className="pt-2">
+                                        <label className="flex items-start gap-3 cursor-pointer group">
+                                            <div className={`mt-0.5 size-5 rounded border flex items-center justify-center shrink-0 transition-colors ${agreedToTerms ? 'bg-purple-600 border-purple-600' : 'border-zinc-300 bg-white group-hover:border-purple-400'}`}>
+                                                {agreedToTerms && <CheckCircle size={12} className="text-white" />}
+                                            </div>
+                                            <input
+                                                type="checkbox"
+                                                className="hidden"
+                                                checked={agreedToTerms}
+                                                onChange={(e) => setAgreedToTerms(e.target.checked)}
+                                            />
+                                            <span className="text-xs text-zinc-500 leading-snug">
+                                                I agree to receive the budget breakdown and related communication.
+                                                <div className="block mt-1 text-[10px] text-zinc-400 font-medium">Don't worry, we hate spammers too 🤝</div>
+                                            </span>
+                                        </label>
+                                    </div>
+
+                                    {modalError && (
+                                        <p className="text-xs text-red-500 flex items-center gap-1 justify-center animate-pulse">
+                                            <AlertTriangle size={12} /> {modalError}
+                                        </p>
+                                    )}
+
+                                    <button
+                                        onClick={handleModalSubmit}
+                                        className="w-full bg-slate-900 text-white font-bold py-4 rounded-xl hover:bg-gradient-to-r hover:from-slate-800 hover:to-slate-700 transition-all duration-300 shadow-lg shadow-slate-900/20 text-lg flex items-center justify-center gap-2 mt-4"
+                                    >
+                                        Reveal My Budget
+                                        <ArrowRight size={18} />
+                                    </button>
+                                </div>
+                            </div>
+                        </motion.div>
+                    </div>
+                )}
+            </AnimatePresence>
 
         </div>
     );
