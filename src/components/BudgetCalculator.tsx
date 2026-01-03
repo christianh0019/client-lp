@@ -429,7 +429,7 @@ export const BudgetCalculator: React.FC = () => {
                                                 >
                                                     <div className="flex justify-between items-center py-2 border-b border-zinc-100 last:border-0">
                                                         <div className="flex items-center gap-2">
-                                                            <span className="text-xs text-zinc-600">Are your plans engineered?</span>
+                                                            <span className="text-xs text-zinc-600">Are Your Plans Engineered?</span>
                                                             <button onClick={() => setViewingArticle(ARTICLES.find(a => a.id === 15) || null)} className="text-blue-400/80 hover:text-blue-500 transition-colors p-1 hover:bg-zinc-100 rounded-full">
                                                                 <HelpCircle size={14} />
                                                             </button>
@@ -454,7 +454,7 @@ export const BudgetCalculator: React.FC = () => {
                                                 >
                                                     <div className="flex justify-between items-center py-2 border-b border-zinc-100 last:border-0">
                                                         <span className="text-xs text-zinc-600">
-                                                            {hasLand ? "Is the lot developed (utilities on site)?" : "Are you buying land that is developed?"}
+                                                            {hasLand ? "Is The Lot Developed (Utilities On Site)?" : "Are You Buying Land That Is Developed?"}
                                                         </span>
                                                         <div className="flex gap-2">
                                                             <button onClick={() => { setHasUtilities(true); setIsCalculated(false); }} className={`px-3 py-1 text-[10px] font-bold rounded-md transition-all ${hasUtilities === true ? 'bg-slate-900 text-white' : 'bg-zinc-100 text-zinc-500 hover:bg-zinc-200'}`}>Yes</button>
@@ -480,8 +480,8 @@ export const BudgetCalculator: React.FC = () => {
                                                 </div>
                                                 <p className="text-[10px] text-zinc-400">
                                                     {hasLand
-                                                        ? 'Your max spending limit for the build (excluding land value).'
-                                                        : 'Your total spending limit including land, home, and fees.'}
+                                                        ? 'Not Including Land'
+                                                        : 'Including Land And All Other Costs'}
                                                 </p>
                                             </div>
                                             {totalBudget ? (
