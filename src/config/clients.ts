@@ -21,9 +21,9 @@ export const CLIENTS: Record<string, ClientConfig> = {
     'homestead': {
         id: 'homestead',
         name: 'Homestead Home Builders',
-        webhookUrl: 'https://hook.us2.make.com/homestead-webhook-id',
-        pixelId: '8888888888',
-        bookingWidgetId: 'homestead-calendar-id'
+        webhookUrl: 'https://services.leadconnectorhq.com/hooks/cG3cesDKIajoyQPNPYZK/webhook-trigger/61e5d2ad-bff6-4dda-afe3-89b988885e8a',
+        pixelId: '672932955108158',
+        bookingWidgetId: 'xPaYSZulboJxxCpHa9dY'
     },
     'verso': {
         id: 'verso',

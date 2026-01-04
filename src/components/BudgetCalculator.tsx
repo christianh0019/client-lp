@@ -174,9 +174,12 @@ export const BudgetCalculator: React.FC = () => {
                 // make.com / zapier usually handle standard CORS fine now.
                 fetch(client.webhookUrl, {
                     method: 'POST',
+                    mode: 'no-cors', // Ensure delivery even if CORS is strict (opaque response)
+                    keepalive: true, // Ensure request completes even if page unloads
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify(payload)
-                }).catch(err => console.error('Webhook Error:', err));
+                }).then(() => console.log('Webhook Sent'))
+                    .catch(err => console.error('Webhook Error:', err));
             }
         } catch (e) {
             console.error('Submission Error:', e);
