@@ -164,34 +164,47 @@ export const ReportGenerator = {
         const { breakdown, feasibility, inputs } = data;
         const budgetFormatted = new Intl.NumberFormat('en-US', { style: 'currency', currency: 'USD', maximumFractionDigits: 0 }).format(breakdown.totalBudget);
         const ppSqFt = Math.round(breakdown.hardCostPerSqFt);
+        const landValueFormatted = (breakdown.landCost / 1000).toFixed(0) + 'k';
 
-        let landStatus = inputs.hasLand ? "Has Land" : "Needs Land";
+        // Sentence 1: The Lead
+        let note = `${inputs.name} is looking to build a ${inputs.targetSqFt.toLocaleString()} sq ft home in ${inputs.city} with a total all-in budget of ${budgetFormatted}. `;
+
+        // Sentence 2: Land & Plans Status
         if (inputs.hasLand) {
-            landStatus += ` (Est. Value: $${(data.breakdown.landCost / 1000).toFixed(0)}k)`;
+            note += `They currently own their land (estimated value ~$${landValueFormatted}) `;
         } else {
-            landStatus += ` (Budgeting $${(data.breakdown.landCost / 1000).toFixed(0)}k)`;
+            note += `They need to acquire land (budgeting ~$${landValueFormatted}) `;
         }
 
-        const projectStatus = inputs.hasEngineering ? "Ready to Build (Has Eng)"
-            : inputs.hasPlans ? "Design Done, Needs Eng"
-                : "Needs Design";
+        if (inputs.hasPlans && inputs.hasEngineering) {
+            note += `and already have both architectural plans and engineering completed. `;
+        } else if (inputs.hasPlans) {
+            note += `and have architectural plans, but still need engineering. `;
+        } else {
+            note += `and do not have architectural plans yet. `;
+        }
 
-        return `
-LEAD SUMMARY:
-${inputs.name} is looking to build a ${inputs.targetSqFt.toLocaleString()} sq ft home in ${inputs.city} with a total budget of ${budgetFormatted}.
+        // Sentence 3: The Hard Numbers
+        note += `After factoring in land and soft costs, they have roughly $${ppSqFt}/ft available for hard construction. `;
 
-FINANCIALS:
-- Target PP SqFt: $${ppSqFt}/ft (Market Status: ${feasibility?.status || 'N/A'})
-- Land Status: ${landStatus}
-- Soft Cost Allowance: $${(breakdown.softCostEstimate / 1000).toFixed(0)}k
+        // Sentence 4: The Verdict
+        if (feasibility) {
+            note += `This puts them in the '${feasibility.status}' range for this market. `;
+        }
 
-PROJECT STATE:
-- Status: ${projectStatus}
-- Design Plans: ${inputs.hasPlans ? "YES" : "NO"}
-- Engineered: ${inputs.hasEngineering ? "YES" : "NO"}
+        // Sentence 5: Next Step
+        if (feasibility?.status === 'Unrealistic') {
+            note += `Recommended next step: Discuss value engineering or scope reduction to make the project viable.`;
+        } else if (!inputs.hasLand) {
+            note += `Recommended next step: Assist with land acquisition strategy.`;
+        } else if (!inputs.hasPlans) {
+            note += `Recommended next step: Schedule a design consultation.`;
+        } else if (!inputs.hasEngineering) {
+            note += `Recommended next step: Review their design plans for feasibility.`;
+        } else {
+            note += `Recommended next step: Move to a hard bid/pricing verification.`;
+        }
 
-RECOMMENDED ACTION:
-${feasibility?.message || "Review budget feasibility."}
-        `.trim();
+        return note;
     }
 };
