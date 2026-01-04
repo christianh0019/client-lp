@@ -114,7 +114,7 @@ export const BudgetCalculator: React.FC = () => {
         setValidationError('');
 
         // Track Progress
-        PixelService.track('InitiateCheckout', { city, content_name: 'Budget Calculator Step 1' });
+        // PixelService.track('InitiateCheckout', { city, content_name: 'Budget Calculator Step 1' });
 
         // 2. Open Modal for Lead Capture
         setShowModal(true);
