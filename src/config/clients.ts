@@ -18,6 +18,20 @@ export const CLIENTS: Record<string, ClientConfig> = {
         pixelId: '', // Empty initially, handled safely
         bookingWidgetId: 'xPaYSZulboJxxCpHa9dY' // Default Widget ID
     },
+    'homestead': {
+        id: 'homestead',
+        name: 'Homestead Home Builders',
+        webhookUrl: 'https://hook.us2.make.com/homestead-webhook-id',
+        pixelId: '8888888888',
+        bookingWidgetId: 'homestead-calendar-id'
+    },
+    'verso': {
+        id: 'verso',
+        name: 'Verso Builders',
+        webhookUrl: 'https://hook.us2.make.com/verso-webhook-id',
+        pixelId: '9999999999',
+        bookingWidgetId: 'verso-calendar-id'
+    },
     // Example for a new client:
     // 'apex-builders': {
     //     id: 'apex-builders',
