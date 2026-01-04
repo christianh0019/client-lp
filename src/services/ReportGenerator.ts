@@ -158,5 +158,40 @@ export const ReportGenerator = {
             closing,
             bookingTopic
         };
+    },
+
+    generateSalesNote: (data: ReportData): string => {
+        const { breakdown, feasibility, inputs } = data;
+        const budgetFormatted = new Intl.NumberFormat('en-US', { style: 'currency', currency: 'USD', maximumFractionDigits: 0 }).format(breakdown.totalBudget);
+        const ppSqFt = Math.round(breakdown.hardCostPerSqFt);
+
+        let landStatus = inputs.hasLand ? "Has Land" : "Needs Land";
+        if (inputs.hasLand) {
+            landStatus += ` (Est. Value: $${(data.breakdown.landCost / 1000).toFixed(0)}k)`;
+        } else {
+            landStatus += ` (Budgeting $${(data.breakdown.landCost / 1000).toFixed(0)}k)`;
+        }
+
+        const projectStatus = inputs.hasEngineering ? "Ready to Build (Has Eng)"
+            : inputs.hasPlans ? "Design Done, Needs Eng"
+                : "Needs Design";
+
+        return `
+LEAD SUMMARY:
+${inputs.name} is looking to build a ${inputs.targetSqFt.toLocaleString()} sq ft home in ${inputs.city} with a total budget of ${budgetFormatted}.
+
+FINANCIALS:
+- Target PP SqFt: $${ppSqFt}/ft (Market Status: ${feasibility?.status || 'N/A'})
+- Land Status: ${landStatus}
+- Soft Cost Allowance: $${(breakdown.softCostEstimate / 1000).toFixed(0)}k
+
+PROJECT STATE:
+- Status: ${projectStatus}
+- Design Plans: ${inputs.hasPlans ? "YES" : "NO"}
+- Engineered: ${inputs.hasEngineering ? "YES" : "NO"}
+
+RECOMMENDED ACTION:
+${feasibility?.message || "Review budget feasibility."}
+        `.trim();
     }
 };

@@ -147,12 +147,28 @@ export const BudgetCalculator: React.FC = () => {
         setGeneratedReport(null);
         setShowBooking(false);
 
+        // Generate Sales Note
+        const reportData = {
+            breakdown,
+            feasibility,
+            inputs: {
+                hasLand: hasLand === true,
+                hasPlans: hasPlans === true,
+                hasEngineering: hasEngineering === true,
+                city,
+                name,
+                targetSqFt: targetSqFt ?? 0
+            }
+        };
+        const salesNote = ReportGenerator.generateSalesNote(reportData);
+
         // Prepare Payload
         const payload = {
             client: client.name,
             source: 'Budget Calculator LP',
             timestamp: new Date().toISOString(),
             contact: { name, email, phone, agreedToTerms },
+            sales_note: salesNote, // AI Summary for Sales Rep
             project: {
                 city,
                 marketData,
