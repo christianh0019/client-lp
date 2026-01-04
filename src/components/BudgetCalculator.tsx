@@ -75,7 +75,13 @@ export const BudgetCalculator: React.FC = () => {
 
     const handleCityChange = (e: React.ChangeEvent<HTMLInputElement>) => {
         setCity(e.target.value);
+        setMarketData(null); // Reset market data to enforce re-selection
         setIsCalculated(false);
+        // Reset suggestions if empty
+        if (e.target.value.length < 2) {
+            setSuggestions([]);
+            setShowSuggestions(false);
+        }
         setGeneratedReport(null); // Reset report on change
         setShowBooking(false);
     };
