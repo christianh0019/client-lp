@@ -26,7 +26,7 @@ function App() {
 
           <Routes>
             <Route path="/" element={<BudgetCalculator />} />
-            <Route path="/calculator" element={<BudgetCalculator />} />
+            <Route path="/:clientSlug" element={<BudgetCalculator />} />
           </Routes>
 
         </div>

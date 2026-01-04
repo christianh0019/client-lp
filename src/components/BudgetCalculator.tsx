@@ -1,13 +1,27 @@
 import React, { useState, useEffect } from 'react';
+import { useParams } from 'react-router-dom';
 import { LocationCostService, type MarketData } from '../services/LocationCostService';
 import { calculateBudgetBreakdown, getFeasibilityStatus as checkFeasibility } from '../services/BudgetLogic';
 import { MapPin, CheckCircle, AlertTriangle, ArrowRight, Layers, DollarSign, Loader2, X, Lock, HelpCircle, Clock } from 'lucide-react';
 import { AnimatePresence, motion } from 'framer-motion';
 import { ARTICLES, type Article } from '../data/knowledgeBaseData';
+import { getClientConfig } from '../config/clients';
+import { PixelService } from '../services/PixelService';
 
 import { ReportGenerator, type GeneratedReport } from '../services/ReportGenerator';
 
 export const BudgetCalculator: React.FC = () => {
+    // Client Configuration
+    const { clientSlug } = useParams();
+    const client = getClientConfig(clientSlug);
+
+    // Initialize Pixel
+    useEffect(() => {
+        if (client.pixelId) {
+            PixelService.init(client.pixelId);
+        }
+    }, [client]);
+
     // Local State (replaced Contexts)
     const [totalBudget, setTotalBudget] = useState<number | null>(null);
     const [landCost, setLandCost] = useState<number | null>(null);
@@ -99,11 +113,14 @@ export const BudgetCalculator: React.FC = () => {
 
         setValidationError('');
 
+        // Track Progress
+        PixelService.track('InitiateCheckout', { city, content_name: 'Budget Calculator Step 1' });
+
         // 2. Open Modal for Lead Capture
         setShowModal(true);
     };
 
-    const handleModalSubmit = () => {
+    const handleModalSubmit = async () => {
         // 3. Final Validation (Contact Info)
         if (!name || !email || !phone) {
             setModalError('Please fill in all fields.');
@@ -116,12 +133,54 @@ export const BudgetCalculator: React.FC = () => {
 
         setModalError('');
 
+        // Track Lead
+        PixelService.track('Lead', {
+            content_name: 'Budget Calculator Submission',
+            currency: 'USD',
+            value: totalBudget ?? 0
+        });
+
         // 4. Reveal Results & Trigger Analysis
         setIsCalculated(true);
         setShowModal(false);
         setIsAnalyzing(true);
         setGeneratedReport(null);
         setShowBooking(false);
+
+        // Prepare Payload
+        const payload = {
+            client: client.name,
+            source: 'Budget Calculator LP',
+            timestamp: new Date().toISOString(),
+            contact: { name, email, phone, agreedToTerms },
+            project: {
+                city,
+                marketData,
+                totalBudget,
+                landOwned: hasLand,
+                landCost: !hasLand ? landCost : 0,
+                targetSqFt,
+                softCosts: { hasPlans, hasEngineering, hasUtilities },
+                breakdown, // Includes hard costs, soft costs, per sq ft
+                feasibility // Status, message, color
+            }
+        };
+
+        // Send Webhook (Fire & Forget to not block UI)
+        try {
+            if (client.webhookUrl) {
+                // Using no-cors mode optionally if simple hooks fail Preflight,
+                // but standard CORS is better for debugging.
+                // make.com / zapier usually handle standard CORS fine now.
+                fetch(client.webhookUrl, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(payload)
+                }).catch(err => console.error('Webhook Error:', err));
+            }
+        } catch (e) {
+            console.error('Submission Error:', e);
+        }
 
         // Simulate AI Analysis Delay
         setTimeout(() => {
@@ -132,7 +191,7 @@ export const BudgetCalculator: React.FC = () => {
                     hasLand: hasLand === true,
                     hasPlans: hasPlans === true,
                     hasEngineering: hasEngineering === true,
-                    city,
+                    city, // Note: We use the raw city state, assuming marketData check passed
                     name,
                     targetSqFt: targetSqFt ?? 0
                 }
@@ -142,18 +201,7 @@ export const BudgetCalculator: React.FC = () => {
         }, 2500);
 
         // Data Capture
-        console.log("CAPTURED LEAD DATA:", {
-            contact: { name, email, phone, agreedToTerms },
-            project: {
-                city,
-                totalBudget,
-                landOwned: hasLand,
-                landCost: !hasLand ? landCost : 0,
-                targetSqFt,
-
-                softCosts: { hasPlans, hasEngineering, hasUtilities }
-            }
-        });
+        console.log("CAPTURED LEAD DATA:", payload);
 
         // Scroll to results
         setTimeout(() => {
@@ -820,10 +868,10 @@ export const BudgetCalculator: React.FC = () => {
                                         </div>
                                         <div className="w-full relative min-h-[700px]">
                                             <iframe
-                                                src="https://api.leadconnectorhq.com/widget/booking/xPaYSZulboJxxCpHa9dY"
+                                                src={`https://api.leadconnectorhq.com/widget/booking/${client.bookingWidgetId}`}
                                                 style={{ width: '100%', border: 'none', minHeight: '700px', overflow: 'hidden' }}
                                                 scrolling="yes"
-                                                id="EQQGeUU49pxoPjjuBmng_1767472093119"
+                                                id={`booking-widget-${client.bookingWidgetId}`}
                                             />
                                         </div>
                                         <script src="https://link.msgsndr.com/js/form_embed.js" type="text/javascript"></script>
