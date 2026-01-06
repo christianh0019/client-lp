@@ -4,6 +4,7 @@ export interface ClientConfig {
     webhookUrl: string;
     pixelId: string;
     bookingWidgetId: string; // To allow unique calendars per client
+    logo?: string; // Optional URL for client logo
     branding?: {
         logo?: string;
         primaryColor?: string;
@@ -16,21 +17,24 @@ export const CLIENTS: Record<string, ClientConfig> = {
         name: 'BuilderProject Demo',
         webhookUrl: 'https://hook.us2.make.com/your-default-webhook', // Replace with actual default or placeholder
         pixelId: '', // Empty initially, handled safely
-        bookingWidgetId: 'xPaYSZulboJxxCpHa9dY' // Default Widget ID
+        bookingWidgetId: 'xPaYSZulboJxxCpHa9dY', // Default Widget ID
+        logo: 'https://placehold.co/200x80/png?text=Demo+Builder'
     },
     'homestead': {
         id: 'homestead',
         name: 'Homestead Home Builders',
         webhookUrl: 'https://services.leadconnectorhq.com/hooks/cG3cesDKIajoyQPNPYZK/webhook-trigger/61e5d2ad-bff6-4dda-afe3-89b988885e8a',
         pixelId: '672932955108158',
-        bookingWidgetId: 'xPaYSZulboJxxCpHa9dY'
+        bookingWidgetId: 'xPaYSZulboJxxCpHa9dY',
+        logo: 'https://placehold.co/200x80/png?text=Homestead+Homes'
     },
     'verso': {
         id: 'verso',
         name: 'Verso Builders',
         webhookUrl: 'https://hook.us2.make.com/verso-webhook-id',
         pixelId: '9999999999',
-        bookingWidgetId: 'verso-calendar-id'
+        bookingWidgetId: 'verso-calendar-id',
+        logo: 'https://placehold.co/200x80/png?text=Verso+Builders'
     },
     // Example for a new client:
     // 'apex-builders': {
