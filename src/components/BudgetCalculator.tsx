@@ -319,15 +319,7 @@ export const BudgetCalculator: React.FC = () => {
             {/* Header */}
             <div className="flex flex-col md:flex-row md:items-end justify-between mb-8 gap-6 animate-fadeIn">
                 <div className="space-y-4 max-w-2xl">
-                    {client.logo && (
-                        <div className="mb-6">
-                            <img
-                                src={client.logo}
-                                alt={`${client.name} Logo`}
-                                className="h-16 md:h-20 object-contain object-left"
-                            />
-                        </div>
-                    )}
+
                     <h2 className="text-4xl md:text-5xl font-serif tracking-tighter text-slate-900 leading-tight">
                         Will Your Budget Actually Build Your Dream Home?
                     </h2>
