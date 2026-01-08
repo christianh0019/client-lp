@@ -5,15 +5,19 @@ import { calculateBudgetBreakdown, getFeasibilityStatus as checkFeasibility } fr
 import { MapPin, CheckCircle, AlertTriangle, ArrowRight, Layers, DollarSign, Loader2, X, Lock, HelpCircle, Clock } from 'lucide-react';
 import { AnimatePresence, motion } from 'framer-motion';
 import { ARTICLES, type Article } from '../data/knowledgeBaseData';
-import { getClientConfig } from '../config/clients';
+import { getClientConfig, type ClientConfig } from '../config/clients';
 import { PixelService } from '../services/PixelService';
 
 import { ReportGenerator, type GeneratedReport } from '../services/ReportGenerator';
 
-export const BudgetCalculator: React.FC = () => {
+interface BudgetCalculatorProps {
+    initialClient?: ClientConfig | null;
+}
+
+export const BudgetCalculator: React.FC<BudgetCalculatorProps> = ({ initialClient }) => {
     // Client Configuration
     const { clientSlug } = useParams();
-    const client = getClientConfig(clientSlug);
+    const client = initialClient || getClientConfig(clientSlug);
 
     // Initialize Pixel
     useEffect(() => {
