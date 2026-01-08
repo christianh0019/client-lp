@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { AirtableService } from '../services/AirtableService';
 import type { ClientConfig } from '../config/clients';
-import { Save, Loader2, Plus, AlertCircle } from 'lucide-react';
+import { Loader2, RefreshCw, Eye } from 'lucide-react';
 
 export const AdminPage: React.FC = () => {
     const [apiKey] = useState(import.meta.env.VITE_AIRTABLE_TOKEN || '');
@@ -12,10 +12,9 @@ export const AdminPage: React.FC = () => {
 
     const [clients, setClients] = useState<ClientConfig[]>([]);
     const [isLoading, setIsLoading] = useState(false);
-    const [statusMsg, setStatusMsg] = useState('');
 
-    // Editing State
-    const [editingClient, setEditingClient] = useState<Partial<ClientConfig> | null>(null);
+    // Viewing State
+    const [viewingClient, setViewingClient] = useState<ClientConfig | null>(null);
 
     useEffect(() => {
         if (baseId && apiKey) {
@@ -37,37 +36,6 @@ export const AdminPage: React.FC = () => {
         setIsLoading(true);
         const data = await AirtableService.getAllClients();
         setClients(data);
-        setIsLoading(false);
-    };
-
-    const handleSaveClient = async () => {
-        if (!editingClient || !editingClient.id || !editingClient.name) {
-            setStatusMsg("Name and Slug (ID) are required.");
-            return;
-        }
-
-        setIsLoading(true);
-        // Cast to full config for save (adding required fields if missing)
-        const clientToSave: ClientConfig = {
-            id: editingClient.id.toLowerCase(),
-            name: editingClient.name,
-            webhookUrl: editingClient.webhookUrl || '',
-            pixelId: editingClient.pixelId || '',
-            bookingWidgetId: editingClient.bookingWidgetId || '',
-            logo: editingClient.logo,
-            branding: {
-                primaryColor: editingClient.branding?.primaryColor
-            }
-        };
-
-        const success = await AirtableService.saveClient(clientToSave);
-        if (success) {
-            setStatusMsg("Saved successfully!");
-            setEditingClient(null);
-            fetchClients();
-        } else {
-            setStatusMsg("Failed to save. Check Base ID and Schema.");
-        }
         setIsLoading(false);
     };
 
@@ -94,7 +62,7 @@ export const AdminPage: React.FC = () => {
                         Connect
                     </button>
                     <div className="text-xs bg-zinc-50 p-2 rounded border border-zinc-200 text-zinc-500">
-                        <strong>Required Table:</strong> Create a table named 'Clients' with columns: Slug, Name, WebhookUrl, PixelId, BookingWidgetId, Logo.
+                        <strong>Required Table:</strong> '🤝 Clients' with columns: Slug, Name, Webhook URL, Facebook Pixel ID, Booking Widget ID, Logo URL, Primary Color.
                     </div>
                 </div>
             </div>
@@ -111,89 +79,52 @@ export const AdminPage: React.FC = () => {
                 <div className="flex gap-4">
                     <button onClick={() => { localStorage.removeItem('admin_base_id'); window.location.reload(); }} className="text-red-500 text-sm">Disconnect</button>
                     <button
-                        onClick={() => setEditingClient({})}
-                        className="bg-purple-600 hover:bg-purple-700 text-white px-4 py-2 rounded-lg flex items-center gap-2 font-bold"
+                        onClick={fetchClients}
+                        className="bg-slate-900 hover:bg-slate-800 text-white px-4 py-2 rounded-lg flex items-center gap-2 font-bold transition-all"
                     >
-                        <Plus size={16} /> New Client
+                        <RefreshCw size={16} className={isLoading ? 'animate-spin' : ''} /> Sync Clients
                     </button>
                 </div>
             </header>
 
-            {/* Editor Modal/Panel */}
-            {editingClient && (
+            {/* View Modal */}
+            {viewingClient && (
                 <div className="fixed inset-0 bg-black/50 flex items-center justify-center p-4 z-50 backdrop-blur-sm">
                     <div className="bg-white p-8 rounded-2xl max-w-2xl w-full shadow-2xl animate-in fade-in zoom-in-95 duration-200">
-                        <h2 className="text-xl font-bold mb-6">{editingClient.id ? 'Edit Client' : 'New Client'}</h2>
+                        <div className="flex justify-between items-start mb-6">
+                            <h2 className="text-xl font-bold">Client Details</h2>
+                            <span className="text-xs bg-purple-100 text-purple-700 px-2 py-1 rounded font-mono">Read Only</span>
+                        </div>
 
                         <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-8">
                             <div>
-                                <label className="block text-xs font-bold mb-1">Slug (URL Path)</label>
-                                <input
-                                    value={editingClient.id || ''}
-                                    onChange={e => setEditingClient({ ...editingClient, id: e.target.value })}
-                                    placeholder="e.g. homestead"
-                                    className="w-full border p-2 rounded"
-                                />
+                                <label className="block text-xs font-bold mb-1 text-zinc-500">Slug (URL Path)</label>
+                                <div className="w-full bg-zinc-50 border p-2 rounded text-zinc-700 font-mono text-sm">{viewingClient.id}</div>
                             </div>
                             <div>
-                                <label className="block text-xs font-bold mb-1">Client Name</label>
-                                <input
-                                    value={editingClient.name || ''}
-                                    onChange={e => setEditingClient({ ...editingClient, name: e.target.value })}
-                                    placeholder="Homestead Builders"
-                                    className="w-full border p-2 rounded"
-                                />
+                                <label className="block text-xs font-bold mb-1 text-zinc-500">Client Name</label>
+                                <div className="w-full bg-zinc-50 border p-2 rounded text-zinc-900 text-sm">{viewingClient.name}</div>
                             </div>
                             <div className="col-span-2">
-                                <label className="block text-xs font-bold mb-1">Logo URL</label>
-                                <input
-                                    value={editingClient.logo || ''}
-                                    onChange={e => setEditingClient({ ...editingClient, logo: e.target.value })}
-                                    placeholder="https://..."
-                                    className="w-full border p-2 rounded"
-                                />
+                                <label className="block text-xs font-bold mb-1 text-zinc-500">Logo URL</label>
+                                <div className="w-full bg-zinc-50 border p-2 rounded text-zinc-600 text-xs overflow-hidden text-ellipsis whitespace-nowrap">{viewingClient.logo || '-'}</div>
                             </div>
                             <div className="col-span-2">
-                                <label className="block text-xs font-bold mb-1">Webhook URL</label>
-                                <input
-                                    value={editingClient.webhookUrl || ''}
-                                    onChange={e => setEditingClient({ ...editingClient, webhookUrl: e.target.value })}
-                                    placeholder="https://hooks.zapier..."
-                                    className="w-full border p-2 rounded"
-                                />
+                                <label className="block text-xs font-bold mb-1 text-zinc-500">Webhook URL</label>
+                                <div className="w-full bg-zinc-50 border p-2 rounded text-zinc-600 text-xs overflow-hidden text-ellipsis whitespace-nowrap">{viewingClient.webhookUrl || '-'}</div>
                             </div>
                             <div>
-                                <label className="block text-xs font-bold mb-1">Pixel ID</label>
-                                <input
-                                    value={editingClient.pixelId || ''}
-                                    onChange={e => setEditingClient({ ...editingClient, pixelId: e.target.value })}
-                                    placeholder="123456..."
-                                    className="w-full border p-2 rounded"
-                                />
+                                <label className="block text-xs font-bold mb-1 text-zinc-500">Pixel ID</label>
+                                <div className="w-full bg-zinc-50 border p-2 rounded text-zinc-600 text-sm">{viewingClient.pixelId || '-'}</div>
                             </div>
                             <div>
-                                <label className="block text-xs font-bold mb-1">Booking Widget ID</label>
-                                <input
-                                    value={editingClient.bookingWidgetId || ''}
-                                    onChange={e => setEditingClient({ ...editingClient, bookingWidgetId: e.target.value })}
-                                    placeholder="Calendar ID"
-                                    className="w-full border p-2 rounded"
-                                />
+                                <label className="block text-xs font-bold mb-1 text-zinc-500">Booking Widget ID</label>
+                                <div className="w-full bg-zinc-50 border p-2 rounded text-zinc-600 text-sm">{viewingClient.bookingWidgetId || '-'}</div>
                             </div>
                         </div>
 
-                        {statusMsg && <div className="mb-4 text-sm text-blue-600 flex items-center gap-2"><AlertCircle size={14} />{statusMsg}</div>}
-
                         <div className="flex justify-end gap-3">
-                            <button onClick={() => setEditingClient(null)} className="px-4 py-2 text-zinc-500">Cancel</button>
-                            <button
-                                onClick={handleSaveClient}
-                                disabled={isLoading}
-                                className="bg-slate-900 text-white px-6 py-2 rounded-lg font-bold flex items-center gap-2"
-                            >
-                                {isLoading ? <Loader2 className="animate-spin" size={16} /> : <Save size={16} />}
-                                Save Client
-                            </button>
+                            <button onClick={() => setViewingClient(null)} className="px-6 py-2 bg-zinc-100 hover:bg-zinc-200 rounded-lg font-bold text-zinc-900">Close</button>
                         </div>
                     </div>
                 </div>
@@ -218,7 +149,7 @@ export const AdminPage: React.FC = () => {
                                 <tr key={client.id} className="border-b border-zinc-100 hover:bg-zinc-50/50">
                                     <td className="p-4 font-mono text-zinc-600">{client.id}</td>
                                     <td className="p-4 font-medium flex items-center gap-3">
-                                        {client.logo && <img src={client.logo} className="h-6 w-auto" />}
+                                        {client.logo ? <img src={client.logo} className="h-6 w-auto" alt={client.name} /> : <span className="text-zinc-300 italic">No Logo</span>}
                                         {client.name}
                                     </td>
                                     <td className="p-4">
@@ -228,13 +159,18 @@ export const AdminPage: React.FC = () => {
                                         </div>
                                     </td>
                                     <td className="p-4 text-right">
-                                        <button onClick={() => setEditingClient(client)} className="text-purple-600 font-bold hover:underline">Edit</button>
+                                        <button onClick={() => setViewingClient(client)} className="text-zinc-600 hover:text-purple-600 font-bold flex items-center gap-1 justify-end ml-auto">
+                                            <Eye size={16} /> View
+                                        </button>
                                     </td>
                                 </tr>
                             ))}
                             {clients.length === 0 && (
                                 <tr>
-                                    <td colSpan={4} className="p-8 text-center text-zinc-400 italic">No clients found in AirTable table 'Clients'.</td>
+                                    <td colSpan={4} className="p-8 text-center text-zinc-400 italic">
+                                        No clients found in Airtable table '🤝 Clients'.<br />
+                                        <span className="text-xs opacity-70">Make sure your Base ID matches and the table name is exact.</span>
+                                    </td>
                                 </tr>
                             )}
                         </tbody>
