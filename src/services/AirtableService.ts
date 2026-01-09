@@ -70,7 +70,7 @@ export class AirtableService {
         const findKey = (pattern: RegExp) => keys.find(k => pattern.test(k));
 
         // Resolve Keys
-        const slugKey = findKey(/slug/i);
+        const slugKey = keys.includes('Slug') ? 'Slug' : findKey(/slug/i);
         const logoKey = findKey(/logo/i);
         const webhookKey = findKey(/webhook/i);
         const pixelKey = findKey(/pixel/i); // Matches 'Facebook Pixel ID' or 'Pixel ID'
@@ -82,12 +82,13 @@ export class AirtableService {
         const rawSlug = slugKey ? fields[slugKey] : null;
         const parsedSlug = AirtableService.getString(rawSlug);
 
-        // Clean ID
+        // Debugging: If parsedSlug looks like JSON, we WANT to see it now to fix the bug
+        // Clean: Remove leading slash, quotes. 
         const cleanId = parsedSlug.replace(/^\//, '').replace(/^"|"$/g, '');
 
-        // Fallback
-        const isValid = cleanId && cleanId !== 'null' && !cleanId.startsWith('{');
-        const finalId = isValid ? cleanId : record.id;
+        // Fallback checks: Only fallback to ID if we truly have NOTHING.
+        // If we have an Error object or weird stuff, SHOW IT so we can debug.
+        const finalId = cleanId ? cleanId : record.id;
 
         const logoUrl = logoKey ? AirtableService.getString(fields[logoKey]) : '';
         const primaryColor = colorKey ? AirtableService.getString(fields[colorKey]) : '';
