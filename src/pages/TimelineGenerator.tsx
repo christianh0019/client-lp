@@ -45,7 +45,8 @@ export const TimelineGenerator: React.FC<TimelineGeneratorProps> = ({ client }) 
         if (questionIdx < 4) {
             setQuestionIdx(prev => prev + 1);
         } else {
-            setStep('gate');
+            // 1. Start Analysis immediately after last question
+            setStep('analyzing');
         }
     };
 
@@ -80,19 +81,44 @@ export const TimelineGenerator: React.FC<TimelineGeneratorProps> = ({ client }) 
         handleNextQuestion();
     };
 
+    // Loading Sequence Effect (Now happens BEFORE Gate)
+    useEffect(() => {
+        if (step === 'analyzing') {
+            const msgs = [
+                `Analyzing your answers...`,
+                `Pulling permit data for ${city}...`,
+                `Projecting construction phases...`,
+                `Generating your personalized roadmap...`
+            ];
+
+            let i = 0;
+            const interval = setInterval(() => {
+                i++;
+                if (i < msgs.length) {
+                    setLoadingMessage(msgs[i]);
+                } else {
+                    clearInterval(interval);
+                    // 2. Transition to Gate when done
+                    setStep('gate');
+                }
+            }, 1200); // Slightly faster to not bore them
+
+            return () => clearInterval(interval);
+        }
+    }, [step, city]);
 
     const handleGateSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
         setIsSubmitting(true);
 
-        // 1. Calculate Result IMMEDIATELY (but don't show yet)
+        // 3. Calculate Result
         const timelineResult = calculateAdjustedTimeline({
             landStatus,
             designStatus
         });
         setResult(timelineResult);
 
-        // 2. Prepare Payload
+        // 4. Prepare Payload
         const payload = {
             client: client.name,
             source: 'Timeline Generator',
@@ -110,7 +136,7 @@ export const TimelineGenerator: React.FC<TimelineGeneratorProps> = ({ client }) 
             sales_note: `Goal: ${moveInGoal}. Reality: ${formatDate(timelineResult.moveInDate)} (${timelineResult.totalMonths}mo build).`
         };
 
-        // 3. Fire Webhook (Background)
+        // 5. Fire Webhook
         if (client.webhookUrl) {
             fetch(client.webhookUrl, {
                 method: 'POST',
@@ -119,35 +145,11 @@ export const TimelineGenerator: React.FC<TimelineGeneratorProps> = ({ client }) 
             }).catch(e => console.error("Webhook Error", e));
         }
 
-        // 4. Start Loading Sequence
-        setStep('analyzing');
-        setIsSubmitting(false); // Stop button spinner, we are now in "Analyzing" screen
+        // 6. Go to Results
+        setIsSubmitting(false);
+        setStep('results');
+        window.scrollTo({ top: 0, behavior: 'smooth' });
     };
-
-    // Loading Sequence Effect
-    useEffect(() => {
-        if (step === 'analyzing') {
-            const msgs = [
-                `Analyzing your answers...`,
-                `Pulling permit data for ${city}...`,
-                `Projecting construction phases...`,
-                `Finalizing your roadmap...`
-            ];
-
-            let i = 0;
-            const interval = setInterval(() => {
-                i++;
-                if (i < msgs.length) {
-                    setLoadingMessage(msgs[i]);
-                } else {
-                    clearInterval(interval);
-                    setStep('results');
-                }
-            }, 1500); // 1.5s per message * 4 = 6 seconds total
-
-            return () => clearInterval(interval);
-        }
-    }, [step, city]);
 
 
     // --- Render Helpers ---
