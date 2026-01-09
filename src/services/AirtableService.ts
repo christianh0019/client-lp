@@ -45,7 +45,7 @@ export class AirtableService {
 
         try {
             const records = await this.base('🤝 Clients').select().all();
-            return records.map(this.mapRecordToConfig);
+            return records.map(record => this.mapRecordToConfig(record));
         } catch (error: any) {
             console.error("Error fetching all clients:", error);
             throw error;
@@ -85,9 +85,10 @@ export class AirtableService {
     }
 
     private static mapRecordToConfig(record: any): ClientConfig {
+        const slug = record.get('Slug');
         return {
-            id: record.get('Slug'),
-            name: record.get('Name'),
+            id: slug ? slug.toString() : record.id, // Fallback to record ID if Slug is missing
+            name: record.get('Name') || 'Unnamed Client', // Fallback name
             webhookUrl: record.get('Webhook URL'),
             pixelId: record.get('Facebook Pixel ID'),
             bookingWidgetId: record.get('Booking Widget ID'),
