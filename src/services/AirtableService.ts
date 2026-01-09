@@ -90,13 +90,21 @@ export class AirtableService {
     }
 
     private static mapRecordToConfig(record: any): ClientConfig {
-        const rawSlug = AirtableService.getString(record.get('Slug'));
-        const cleanId = rawSlug.replace(/^\//, ''); // Remove leading slash if present
+        // Try multiple field name variations
+        const rawSlug =
+            record.get('Slug') ||
+            record.get('slug') ||
+            record.get('Slug ');
+
+        const parsedSlug = AirtableService.getString(rawSlug);
+
+        // Remove leading slash, also remove quotes if JSON stringified
+        const cleanId = parsedSlug.replace(/^\//, '').replace(/^"|"$/g, '');
 
         // Use parsed slug, or fallback to record ID if empty
-        const finalId = cleanId || record.id;
+        const isValid = cleanId && cleanId !== 'null' && !cleanId.startsWith('{');
+        const finalId = isValid ? cleanId : record.id;
 
-        // Use helper for safe extraction
         const logoUrl = AirtableService.getString(record.get('Logo URL'));
         const primaryColor = AirtableService.getString(record.get('Primary Color'));
 
@@ -116,11 +124,11 @@ export class AirtableService {
 
     // Helper to safely extract string from various Airtable field types
     private static getString(value: any): string {
-        if (!value) return '';
+        if (value === null || value === undefined) return '';
 
         // Recursively handle arrays (Lookups, Rollups)
         if (Array.isArray(value)) {
-            return AirtableService.getString(value[0]);
+            return value.length > 0 ? AirtableService.getString(value[0]) : '';
         }
 
         // Handle Objects (Attachments, Linked Records)
@@ -129,8 +137,13 @@ export class AirtableService {
             if (value.url) return value.url;
             // Linked records have .name or .text
             if (value.name) return value.name;
-            // Fallback: try string conversion but avoid [object Object] if possible
-            return '';
+
+            // Debugging: If none of the above, return JSON so we can see what it is in the UI
+            try {
+                return JSON.stringify(value);
+            } catch (e) {
+                return String(value);
+            }
         }
 
         return String(value);
