@@ -493,7 +493,7 @@ export const TimelineGenerator: React.FC<TimelineGeneratorProps> = ({ client }) 
 
                     {client.bookingWidgetId ? (
                         <button
-                            onClick={() => setShowBooking(true)}
+                            onClick={() => { setIsAutoPopup(false); setShowBooking(true); }}
                             className="relative z-10 inline-flex items-center gap-3 bg-slate-900 text-white font-bold py-4 px-10 rounded-full hover:bg-slate-800 hover:scale-[1.02] hover:shadow-lg transition-all"
                         >
                             Schedule Free Planning Call <ArrowRight size={20} />
