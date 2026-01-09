@@ -19,51 +19,107 @@ export interface TimelineResult {
 
 export interface TimelineInputs {
     landStatus: 'Yes' | 'Not yet' | 'In process';
-    designStatus: 'Complete' | 'In progress' | 'Not started';
-    targetDate?: Date;
+    designStatus: 'Plans Complete' | 'In Progress' | 'Not Started';
+    financing: 'Cash' | 'Pre-approved loan' | 'Still exploring';
+    targetDate?: string;
 }
 
-const BASE_PHASES: Phase[] = [
-    { name: 'Getting Ready', durationMonths: 2, description: 'Finalizing financing and land feasibility.', color: 'bg-blue-500' },
-    { name: 'Design & Planning', durationMonths: 4, description: 'Architectural drawings, engineering, and adjustments.', color: 'bg-purple-500' },
-    { name: 'Permits & Prep', durationMonths: 3, description: 'City submissions, approvals, and site preparation.', color: 'bg-orange-500' },
-    { name: 'Construction', durationMonths: 12, description: 'Foundation to final walkthrough.', color: 'bg-green-500' },
-];
+// Helper to add months safely
+const addMonths = (date: Date, months: number) => {
+    const d = new Date(date);
+    d.setMonth(d.getMonth() + months);
+    return d;
+};
 
 export const calculateAdjustedTimeline = (inputs: TimelineInputs): TimelineResult => {
-    // Clone phases to avoid mutating constant
-    let phases = JSON.parse(JSON.stringify(BASE_PHASES));
+    const phases: Phase[] = [];
 
-    // Logic: Adjust Phases based on Inputs
+    // --- Phase 1: Land & Prep ---
+    let landDuration = 0;
+    let landDesc = "";
 
-    // 1. Getting Ready (Land)
     if (inputs.landStatus === 'Yes') {
-        // If they have land, this phase is faster (just finance/feasibility)
-        phases[0].durationMonths = 1;
-    }
-    // If "In Process" or "Not Yet", keep at 2-3 months default.
-
-    // 2. Design
-    if (inputs.designStatus === 'Complete') {
-        // Skip main design, just keep 1 month for "Builder Review/Bidding"
-        phases[1].durationMonths = 1;
-        phases[1].description = 'Final builder review and bidding.';
-    } else if (inputs.designStatus === 'In progress') {
-        phases[1].durationMonths = 2; // Halfway there
+        landDuration = 1;
+        landDesc = "Since you own land, we skip the search and focus on site feasibility and soil tests.";
+    } else if (inputs.landStatus === 'In process') {
+        landDuration = 2;
+        landDesc = "Budgeting time to finalize your land purchase and close escrow.";
+    } else {
+        landDuration = 4;
+        landDesc = "Finding the perfect lot is step one. We've budgeted 3-4 months for search and closing.";
     }
 
-    // Calculation Loop
+    // Financing Impact on Prep
+    if (inputs.financing === 'Still exploring') {
+        landDuration += 1;
+        landDesc += " Includes extra time to secure pre-approval.";
+    } else if (inputs.financing === 'Cash') {
+        landDesc += " Cash financing will speed up closing.";
+    }
+
+    phases.push({
+        name: inputs.landStatus === 'Not yet' ? 'Land Search & Prep' : 'Project Prep',
+        durationMonths: landDuration,
+        description: landDesc,
+        color: 'bg-blue-500'
+    });
+
+
+    // --- Phase 2: Design & Engineering ---
+    let designDuration = 0;
+    let designDesc = "";
+
+    if (inputs.designStatus === 'Plans Complete') {
+        designDuration = 1;
+        designDesc = "Your plans are ready! We just need 1 month for final builder review and sub-contractor bidding.";
+    } else if (inputs.designStatus === 'In Progress') {
+        designDuration = 3;
+        designDesc = "Since you've started design, we'll need a few months to finalize engineering and selections.";
+    } else {
+        designDuration = 5;
+        designDesc = "Full custom design from concept to construction docs tailored to your lifestyle.";
+    }
+
+    phases.push({
+        name: 'Design & Bidding',
+        durationMonths: designDuration,
+        description: designDesc,
+        color: 'bg-purple-500'
+    });
+
+
+    // --- Phase 3: Permitting ---
+    // This is static for now, as we can't really guess by city without a database
+    phases.push({
+        name: 'Permits & Approvals',
+        durationMonths: 3,
+        description: "Submission to the city/county for building permits. This timeline varies heavily by municipality.",
+        color: 'bg-orange-500'
+    });
+
+
+    // --- Phase 4: Construction ---
+    // Standard custom home is ~10-12 months
+    const buildDuration = 11;
+    phases.push({
+        name: 'Construction',
+        durationMonths: buildDuration,
+        description: "From foundation to final walkthrough. Excavation, framing, systems, and finishes.",
+        color: 'bg-green-500'
+    });
+
+
+    // --- Calculation Loop ---
     let current = new Date();
     const resultPhases = [];
     let totalMonths = 0;
 
     for (const phase of phases) {
-        if (phase.durationMonths <= 0) continue; // Skip empty phases
+        if (phase.durationMonths <= 0) continue;
 
         const start = new Date(current);
-        // Add months
-        current.setMonth(current.getMonth() + phase.durationMonths);
-        const end = new Date(current);
+        const end = addMonths(current, phase.durationMonths);
+        current = end; // Advance time
 
         totalMonths += phase.durationMonths;
 

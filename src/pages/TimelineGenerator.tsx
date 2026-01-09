@@ -22,8 +22,8 @@ export const TimelineGenerator: React.FC<TimelineGeneratorProps> = ({ client }) 
     const [isCityValid, setIsCityValid] = useState(false);
 
     const [landStatus, setLandStatus] = useState<TimelineInputs['landStatus']>('Not yet');
-    const [financing, setFinancing] = useState('Still exploring options');
-    const [designStatus, setDesignStatus] = useState<TimelineInputs['designStatus']>('Not started');
+    const [financing, setFinancing] = useState<TimelineInputs['financing']>('Still exploring');
+    const [designStatus, setDesignStatus] = useState<TimelineInputs['designStatus']>('Not Started');
     const [moveInGoal, setMoveInGoal] = useState('');
 
     // Contact State
@@ -113,7 +113,7 @@ export const TimelineGenerator: React.FC<TimelineGeneratorProps> = ({ client }) 
         e.preventDefault();
         setIsSubmitting(true);
 
-        const timelineResult = calculateAdjustedTimeline({ landStatus, designStatus });
+        const timelineResult = calculateAdjustedTimeline({ landStatus, designStatus, financing });
         setResult(timelineResult);
 
         const payload = {
@@ -154,8 +154,8 @@ export const TimelineGenerator: React.FC<TimelineGeneratorProps> = ({ client }) 
         <button
             onClick={onClick}
             className={`w-full text-left p-5 rounded-2xl border transition-all duration-200 group relative overflow-hidden ${selected
-                    ? 'border-purple-500 bg-purple-50 shadow-md shadow-purple-100 ring-1 ring-purple-500'
-                    : 'border-zinc-200 hover:border-zinc-300 hover:bg-zinc-50 hover:shadow-sm bg-white'
+                ? 'border-purple-500 bg-purple-50 shadow-md shadow-purple-100 ring-1 ring-purple-500'
+                : 'border-zinc-200 hover:border-zinc-300 hover:bg-zinc-50 hover:shadow-sm bg-white'
                 }`}
         >
             <div className="flex justify-between items-center relative z-10">
@@ -251,7 +251,7 @@ export const TimelineGenerator: React.FC<TimelineGeneratorProps> = ({ client }) 
                 content: (
                     <div className="grid gap-4 w-full max-w-md mx-auto">
                         {['Cash', 'Pre-approved loan', 'Still exploring'].map(opt => (
-                            <OptionButton key={opt} label={opt} selected={financing === opt} onClick={() => { setFinancing(opt); setTimeout(handleNextQuestion, 250); }} />
+                            <OptionButton key={opt} label={opt} selected={financing === opt} onClick={() => { setFinancing(opt as any); setTimeout(handleNextQuestion, 250); }} />
                         ))}
                     </div>
                 ),
