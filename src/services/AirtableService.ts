@@ -25,9 +25,13 @@ export class AirtableService {
     static async getClientBySlug(slug: string): Promise<ClientConfig | null> {
         if (!this.base) return null;
 
+        const clean = slug.toLowerCase();
+        // Match "slug" OR "/slug" to support Airtable values like "/homestead"
+        const formula = `OR({Slug} = '${clean}', {Slug} = '/${clean}')`;
+
         try {
             const records = await this.base('🤝 Clients').select({
-                filterByFormula: `{Slug} = '${slug.toLowerCase()}'`,
+                filterByFormula: formula,
                 maxRecords: 1
             }).firstPage();
 
@@ -57,6 +61,7 @@ export class AirtableService {
 
         try {
             // Check if exists to update, else create
+            // Note: Saving might fail if slug format doesn't match, but Admin is read-only now basically.
             const records = await this.base('🤝 Clients').select({
                 filterByFormula: `{Slug} = '${client.id.toLowerCase()}'`,
                 maxRecords: 1
@@ -85,10 +90,32 @@ export class AirtableService {
     }
 
     private static mapRecordToConfig(record: any): ClientConfig {
-        const slug = record.get('Slug');
+        let rawSlug = record.get('Slug');
+
+        // Handle Lookups/Rollups (Strings often wrapped in Array)
+        if (Array.isArray(rawSlug)) {
+            rawSlug = rawSlug[0];
+        }
+
+        // Ensure String and handle objects if any weirdness
+        let slugStr = rawSlug ? String(rawSlug) : '';
+
+        // Clean: Remove leading slash for internal ID consistency
+        const cleanId = slugStr.replace(/^\//, '');
+
+        // Fallback checks
+        if (!cleanId || cleanId === '[object Object]') {
+            // Try to use record ID if slug failed hard or is empty
+            return {
+                id: record.id,
+                name: record.get('Name') || 'Unknown',
+                branding: { primaryColor: '#000000' }
+            } as ClientConfig;
+        }
+
         return {
-            id: slug ? slug.toString() : record.id, // Fallback to record ID if Slug is missing
-            name: record.get('Name') || 'Unnamed Client', // Fallback name
+            id: cleanId,
+            name: record.get('Name'),
             webhookUrl: record.get('Webhook URL'),
             pixelId: record.get('Facebook Pixel ID'),
             bookingWidgetId: record.get('Booking Widget ID'),
