@@ -5,6 +5,7 @@ export interface ClientConfig {
     pixelId: string;
     bookingWidgetId: string; // To allow unique calendars per client
     logo?: string; // Optional URL for client logo
+    phoneNumber?: string; // Optional phone number for CTA
     branding?: {
         logo?: string;
         primaryColor?: string;

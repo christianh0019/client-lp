@@ -77,6 +77,7 @@ export class AirtableService {
         const bookingKey = findKey(/booking/i); // Matches 'Booking Widget ID'
         const colorKey = findKey(/color/i) || findKey(/primary/i);
         const nameKey = findKey(/name/i) || 'Name';
+        const phoneKey = findKey(/phone/i); // Matches 'Phone Number' or 'Contact Phone'
 
         // Extract Values
         const rawSlug = slugKey ? fields[slugKey] : null;
@@ -99,6 +100,7 @@ export class AirtableService {
             webhookUrl: webhookKey ? AirtableService.getString(fields[webhookKey]) : '',
             pixelId: pixelKey ? AirtableService.getString(fields[pixelKey]) : '',
             bookingWidgetId: bookingKey ? AirtableService.getString(fields[bookingKey]) : '',
+            phoneNumber: phoneKey ? AirtableService.getString(fields[phoneKey]) : '',
             logo: logoUrl,
             branding: {
                 logo: logoUrl,
