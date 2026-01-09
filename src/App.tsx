@@ -1,8 +1,9 @@
 import { useState, useEffect } from 'react';
-import { Routes, Route, useLocation } from 'react-router-dom';
+import { Routes, Route, useLocation, Navigate } from 'react-router-dom';
 import { BudgetCalculator } from './components/BudgetCalculator';
 import { getClientConfig, type ClientConfig } from './config/clients';
 import { AdminPage } from './pages/AdminPage';
+import { ApplicationPage } from './pages/ApplicationPage';
 import { AirtableService } from './services/AirtableService';
 import { CheckCircle2, Loader2 } from 'lucide-react';
 import { AIRTABLE_CONSTANTS } from './config/constants';
@@ -95,9 +96,20 @@ function App() {
         <div className="container mx-auto">
 
           <Routes>
-            <Route path="/" element={<BudgetCalculator initialClient={client} />} />
+            {/* Admin Route */}
             <Route path="/admin" element={<AdminPage />} />
-            <Route path="/:clientSlug" element={<BudgetCalculator initialClient={client} />} />
+
+            {/* Legacy Root Redirect (optional logic, but typically / should go to main funnel) */}
+            <Route path="/" element={<BudgetCalculator initialClient={client} />} />
+
+            {/* Funnel Routes */}
+            {/* 1. Explicit Funnel Paths - Matches /:slug/path */}
+            <Route path="/:clientSlug/budget-calculator" element={<BudgetCalculator initialClient={client} />} />
+            <Route path="/:clientSlug/application" element={<ApplicationPage client={client} />} />
+
+            {/* 2. Legacy Redirect - Matches /:slug ONLY (no subpath) */}
+            {/* Redirects to Budget Calculator to preserve ad traffic */}
+            <Route path="/:clientSlug" element={<Navigate to={`/${slug}/budget-calculator`} replace />} />
           </Routes>
 
         </div>
