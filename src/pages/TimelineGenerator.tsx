@@ -2,7 +2,9 @@ import React, { useState, useEffect } from 'react';
 import { type ClientConfig } from '../config/clients';
 import { calculateAdjustedTimeline, formatDate, type TimelineResult, type TimelineInputs } from '../services/TimelineLogic';
 import { LocationCostService } from '../services/LocationCostService';
-import { CheckCircle2, ArrowRight, ArrowLeft, Loader2, ShieldCheck, MapPin, Calendar as CalendarIcon, PiggyBank, PenTool, Check, AlertTriangle } from 'lucide-react';
+import { PixelService } from '../services/PixelService';
+import { AnimatePresence, motion } from 'framer-motion';
+import { CheckCircle2, ArrowRight, ArrowLeft, Loader2, ShieldCheck, MapPin, Calendar as CalendarIcon, PiggyBank, PenTool, Check, AlertTriangle, X, CheckCircle } from 'lucide-react';
 
 interface TimelineGeneratorProps {
     client: ClientConfig;
@@ -31,12 +33,29 @@ export const TimelineGenerator: React.FC<TimelineGeneratorProps> = ({ client }) 
     const [email, setEmail] = useState('');
     const [phone, setPhone] = useState('');
     const [isSubmitting, setIsSubmitting] = useState(false);
+    const [showBooking, setShowBooking] = useState(false);
 
     // Result State
     const [result, setResult] = useState<TimelineResult | null>(null);
     const [loadingMessage, setLoadingMessage] = useState('Analyzing your answers...');
 
     // --- Actions ---
+
+    // Initialize Pixel
+    useEffect(() => {
+        if (client.pixelId) {
+            PixelService.init(client.pixelId);
+        }
+    }, [client]);
+
+    // --- Actions ---
+
+    // Initialize Pixel
+    useEffect(() => {
+        if (client.pixelId) {
+            PixelService.init(client.pixelId);
+        }
+    }, [client]);
 
     // Scroll to top on step change for mobile
     useEffect(() => {
@@ -133,6 +152,13 @@ export const TimelineGenerator: React.FC<TimelineGeneratorProps> = ({ client }) 
             sales_note: `Goal: ${moveInGoal}. Reality: ${formatDate(timelineResult.moveInDateMin)}-${formatDate(timelineResult.moveInDateMax)} (${timelineResult.minTotalMonths}-${timelineResult.maxTotalMonths}mo).`
         };
 
+        // Track Lead
+        PixelService.track('Lead', {
+            content_name: 'Timeline Generator Submission',
+            value: 0,
+            currency: 'USD'
+        });
+
         if (client.webhookUrl) {
             fetch(client.webhookUrl, {
                 method: 'POST',
@@ -154,8 +180,8 @@ export const TimelineGenerator: React.FC<TimelineGeneratorProps> = ({ client }) 
         <button
             onClick={onClick}
             className={`w-full text-left p-5 rounded-2xl border transition-all duration-200 group relative overflow-hidden ${selected
-                    ? 'border-purple-500 bg-purple-50 shadow-md shadow-purple-100 ring-1 ring-purple-500'
-                    : 'border-zinc-200 hover:border-zinc-300 hover:bg-zinc-50 hover:shadow-sm bg-white'
+                ? 'border-purple-500 bg-purple-50 shadow-md shadow-purple-100 ring-1 ring-purple-500'
+                : 'border-zinc-200 hover:border-zinc-300 hover:bg-zinc-50 hover:shadow-sm bg-white'
                 }`}
         >
             <div className="flex justify-between items-center relative z-10">
@@ -456,17 +482,27 @@ export const TimelineGenerator: React.FC<TimelineGeneratorProps> = ({ client }) 
                 </div>
 
                 {/* CTA */}
-                <div className="mt-24 bg-gradient-to-br from-zinc-50 to-white border border-zinc-100 p-12 rounded-[3rem] text-center max-w-3xl mx-auto shadow-xl shadow-slate-200/50">
-                    <h2 className="text-3xl font-serif text-slate-900 mb-6">Want to stay on track?</h2>
-                    <p className="text-zinc-500 max-w-md mx-auto mb-8 text-lg">
-                        This timeline is a great start. A 15-minute consultation can help you lock in these dates and avoid common delays.
+                <div className="mt-24 bg-gradient-to-br from-zinc-50 to-white border border-zinc-100 p-12 rounded-[3rem] text-center max-w-3xl mx-auto shadow-xl shadow-slate-200/50 relative overflow-hidden">
+                    <h2 className="text-3xl font-serif text-slate-900 mb-6 relative z-10">Want to lock in this timeline?</h2>
+                    <p className="text-zinc-500 max-w-md mx-auto mb-8 text-lg relative z-10">
+                        This roadmap is a great start. A 15-minute consultation can help you confirm these dates and avoid common delays.
                     </p>
-                    <a
-                        href={`tel:${client.phoneNumber || ''}`}
-                        className="inline-flex items-center gap-3 bg-slate-900 text-white font-bold py-4 px-10 rounded-full hover:bg-slate-800 hover:scale-[1.02] hover:shadow-lg transition-all"
-                    >
-                        Schedule Free Planning Call <ArrowRight size={20} />
-                    </a>
+
+                    {client.bookingWidgetId ? (
+                        <button
+                            onClick={() => setShowBooking(true)}
+                            className="relative z-10 inline-flex items-center gap-3 bg-slate-900 text-white font-bold py-4 px-10 rounded-full hover:bg-slate-800 hover:scale-[1.02] hover:shadow-lg transition-all"
+                        >
+                            Schedule Free Planning Call <ArrowRight size={20} />
+                        </button>
+                    ) : (
+                        <a
+                            href={`tel:${client.phoneNumber || ''}`}
+                            className="relative z-10 inline-flex items-center gap-3 bg-slate-900 text-white font-bold py-4 px-10 rounded-full hover:bg-slate-800 hover:scale-[1.02] hover:shadow-lg transition-all"
+                        >
+                            Schedule Free Planning Call <ArrowRight size={20} />
+                        </a>
+                    )}
                 </div>
 
             </div>
@@ -474,7 +510,7 @@ export const TimelineGenerator: React.FC<TimelineGeneratorProps> = ({ client }) 
     };
 
     return (
-        <div className="min-h-screen bg-[#fafafa] pb-20 selection:bg-purple-100">
+        <div className="min-h-screen bg-[#fafafa] pb-20 selection:bg-purple-100 relative">
             <div className="p-4 md:p-8">
                 {step === 'welcome' && renderWelcome()}
                 {step === 'questions' && renderQuestionnaire()}
@@ -482,6 +518,51 @@ export const TimelineGenerator: React.FC<TimelineGeneratorProps> = ({ client }) 
                 {step === 'gate' && renderGate()}
                 {step === 'results' && renderResults()}
             </div>
+
+            {/* Booking Modal */}
+            <AnimatePresence>
+                {showBooking && client.bookingWidgetId && (
+                    <div className="fixed inset-0 z-[150] flex items-center justify-center p-4 md:p-8">
+                        <motion.div
+                            initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}
+                            className="absolute inset-0 bg-black/80 backdrop-blur-sm"
+                            onClick={() => setShowBooking(false)}
+                        />
+                        <motion.div
+                            initial={{ opacity: 0, scale: 0.95, y: 20 }}
+                            animate={{ opacity: 1, scale: 1, y: 0 }}
+                            exit={{ opacity: 0, scale: 0.95, y: 20 }}
+                            className="bg-white w-full max-w-4xl max-h-[90vh] overflow-y-auto rounded-3xl relative z-60 shadow-2xl flex flex-col"
+                        >
+                            <div className="bg-zinc-50 p-6 md:p-8 text-center border-b border-zinc-100 relative">
+                                <button
+                                    onClick={() => setShowBooking(false)}
+                                    className="absolute top-4 right-4 p-2 bg-black/5 hover:bg-black/10 rounded-full text-zinc-500 transition-colors"
+                                >
+                                    <X size={20} />
+                                </button>
+                                <div className="inline-flex items-center justify-center p-3 bg-green-100 text-green-700 rounded-full mb-4 shadow-sm">
+                                    <CheckCircle size={24} />
+                                </div>
+                                <h4 className="font-serif text-2xl font-bold text-slate-900 mb-2">Great! Let's lock in your timeline.</h4>
+                                <p className="text-zinc-600 max-w-md mx-auto">
+                                    Select a time below to discuss your project roadmap.
+                                </p>
+                            </div>
+                            <div className="w-full relative min-h-[600px] bg-white">
+                                <iframe
+                                    src={`https://api.leadconnectorhq.com/widget/booking/${client.bookingWidgetId}`}
+                                    style={{ width: '100%', border: 'none', minHeight: '600px', overflow: 'hidden' }}
+                                    scrolling="yes"
+                                    id={`booking-widget-${client.bookingWidgetId}`}
+                                    title="Booking Calendar"
+                                />
+                            </div>
+                            <script src="https://link.msgsndr.com/js/form_embed.js" type="text/javascript"></script>
+                        </motion.div>
+                    </div>
+                )}
+            </AnimatePresence>
         </div>
     );
 };
