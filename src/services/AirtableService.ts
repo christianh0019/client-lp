@@ -9,17 +9,24 @@ const BASE_ID = import.meta.env.VITE_AIRTABLE_BASE_ID;
 export class AirtableService {
     private static base: Airtable.Base;
 
-    // Allow dynamic initialization if Base ID is user-provided in Admin UI
-    static init(baseId: string = BASE_ID) {
-        if (!API_KEY) {
-            console.error("Airtable Token Missing");
+    // Allow dynamic initialization if Base ID/Token is user-provided in Admin UI
+    static init(baseId: string = BASE_ID, apiKey: string = API_KEY) {
+        if (!apiKey) {
+            console.error("Airtable Token Missing (Env or Param)");
+            // We don't return here, we let it fail or we set a flag? 
+            // Actually, we can't init.
+            // But we shouldn't fail silently.
+            // Let's just try to init, Airtable lib will throw or fail later.
+            // Better: Set base to null.
+            this.base = undefined as any;
             return;
         }
         if (!baseId) {
             console.error("Airtable Base ID Missing");
+            this.base = undefined as any;
             return;
         }
-        this.base = new Airtable({ apiKey: API_KEY }).base(baseId);
+        this.base = new Airtable({ apiKey: apiKey }).base(baseId);
     }
 
     static async getClientBySlug(slug: string): Promise<ClientConfig | null> {
