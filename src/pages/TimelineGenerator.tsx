@@ -34,6 +34,7 @@ export const TimelineGenerator: React.FC<TimelineGeneratorProps> = ({ client }) 
     const [phone, setPhone] = useState('');
     const [isSubmitting, setIsSubmitting] = useState(false);
     const [showBooking, setShowBooking] = useState(false);
+    const [isAutoPopup, setIsAutoPopup] = useState(false);
 
     // Result State
     const [result, setResult] = useState<TimelineResult | null>(null);
@@ -48,14 +49,16 @@ export const TimelineGenerator: React.FC<TimelineGeneratorProps> = ({ client }) 
         }
     }, [client]);
 
-    // --- Actions ---
-
-    // Initialize Pixel
+    // Auto-Popup Booking in Results
     useEffect(() => {
-        if (client.pixelId) {
-            PixelService.init(client.pixelId);
+        if (step === 'results' && client.bookingWidgetId && !showBooking) {
+            const timer = setTimeout(() => {
+                setIsAutoPopup(true);
+                setShowBooking(true);
+            }, 5000);
+            return () => clearTimeout(timer);
         }
-    }, [client]);
+    }, [step, client.bookingWidgetId]);
 
     // Scroll to top on step change for mobile
     useEffect(() => {
@@ -544,10 +547,21 @@ export const TimelineGenerator: React.FC<TimelineGeneratorProps> = ({ client }) 
                                 <div className="inline-flex items-center justify-center p-3 bg-green-100 text-green-700 rounded-full mb-4 shadow-sm">
                                     <CheckCircle size={24} />
                                 </div>
-                                <h4 className="font-serif text-2xl font-bold text-slate-900 mb-2">Great! Let's lock in your timeline.</h4>
-                                <p className="text-zinc-600 max-w-md mx-auto">
-                                    Select a time below to discuss your project roadmap.
-                                </p>
+                                {isAutoPopup ? (
+                                    <>
+                                        <h4 className="font-serif text-2xl font-bold text-slate-900 mb-2">Wait! Don't let this timeline slip. ⏳</h4>
+                                        <p className="text-zinc-600 max-w-md mx-auto">
+                                            Permitting backlogs and material delays are real. <strong>Book a 15-min review</strong> to ensure this move-in date is actually realistic.
+                                        </p>
+                                    </>
+                                ) : (
+                                    <>
+                                        <h4 className="font-serif text-2xl font-bold text-slate-900 mb-2">Great! Let's lock in your timeline.</h4>
+                                        <p className="text-zinc-600 max-w-md mx-auto">
+                                            Select a time below to discuss your project roadmap.
+                                        </p>
+                                    </>
+                                )}
                             </div>
                             <div className="w-full relative min-h-[600px] bg-white">
                                 <iframe
