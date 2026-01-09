@@ -4,6 +4,7 @@ import { BudgetCalculator } from './components/BudgetCalculator';
 import { getClientConfig, type ClientConfig } from './config/clients';
 import { AdminPage } from './pages/AdminPage';
 import { ApplicationPage } from './pages/ApplicationPage';
+import { TimelineGenerator } from './pages/TimelineGenerator';
 import { AirtableService } from './services/AirtableService';
 import { CheckCircle2, Loader2 } from 'lucide-react';
 import { AIRTABLE_CONSTANTS } from './config/constants';
@@ -106,6 +107,7 @@ function App() {
             {/* 1. Explicit Funnel Paths - Matches /:slug/path */}
             <Route path="/:clientSlug/budget-calculator" element={<BudgetCalculator initialClient={client} />} />
             <Route path="/:clientSlug/application" element={<ApplicationPage client={client} />} />
+            <Route path="/:clientSlug/timeline" element={<TimelineGenerator client={client} />} />
 
             {/* 2. Legacy Redirect - Matches /:slug ONLY (no subpath) */}
             {/* Redirects to Budget Calculator to preserve ad traffic */}
