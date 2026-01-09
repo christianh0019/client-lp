@@ -1,18 +1,24 @@
 export interface Phase {
     name: string;
-    durationMonths: number;
+    minDuration: number;
+    maxDuration: number;
     description: string;
+    delayWarning?: string; // Optional warning box content
     color: string;
 }
 
 export interface TimelineResult {
-    totalMonths: number;
-    moveInDate: Date;
+    minTotalMonths: number;
+    maxTotalMonths: number;
+    moveInDateMin: Date;
+    moveInDateMax: Date;
     phases: {
         name: string;
-        startDate: Date;
-        endDate: Date;
+        minDuration: number;
+        maxDuration: number;
+        startDate: Date; // Based on Avg/Max for simplicity in plotting, or just illustrative
         description: string;
+        delayWarning?: string;
         color: string;
     }[];
 }
@@ -24,7 +30,7 @@ export interface TimelineInputs {
     targetDate?: string;
 }
 
-// Helper to add months safely
+// Helper
 const addMonths = (date: Date, months: number) => {
     const d = new Date(date);
     d.setMonth(d.getMonth() + months);
@@ -35,106 +41,119 @@ export const calculateAdjustedTimeline = (inputs: TimelineInputs): TimelineResul
     const phases: Phase[] = [];
 
     // --- Phase 1: Land & Prep ---
-    let landDuration = 0;
+    let landMin = 0, landMax = 0;
     let landDesc = "";
+    let landWarn = undefined;
 
     if (inputs.landStatus === 'Yes') {
-        landDuration = 1;
-        landDesc = "Since you own land, we skip the search and focus on site feasibility and soil tests.";
+        landMin = 1; landMax = 1;
+        landDesc = "Since you own land, we focus immediately on site feasibility.";
     } else if (inputs.landStatus === 'In process') {
-        landDuration = 2;
-        landDesc = "Budgeting time to finalize your land purchase and close escrow.";
+        landMin = 1; landMax = 2;
+        landDesc = "Time budgeted to finalize your land purchase and close escrow.";
     } else {
-        landDuration = 4;
-        landDesc = "Finding the perfect lot is step one. We've budgeted 3-4 months for search and closing.";
+        landMin = 3; landMax = 5;
+        landDesc = "Finding the perfect lot is the most variable step.";
+        landWarn = "Land inventory is tight. Finding the right lot can take longer than expected.";
     }
 
-    // Financing Impact on Prep
+    // Financing Impact
     if (inputs.financing === 'Still exploring') {
-        landDuration += 1;
-        landDesc += " Includes extra time to secure pre-approval.";
-    } else if (inputs.financing === 'Cash') {
-        landDesc += " Cash financing will speed up closing.";
+        landMax += 1;
+        landDesc += " Includes buffer for bank approvals.";
     }
 
     phases.push({
         name: inputs.landStatus === 'Not yet' ? 'Land Search & Prep' : 'Project Prep',
-        durationMonths: landDuration,
+        minDuration: landMin,
+        maxDuration: landMax,
         description: landDesc,
+        delayWarning: landWarn,
         color: 'bg-blue-500'
     });
 
 
     // --- Phase 2: Design & Engineering ---
-    let designDuration = 0;
+    let designMin = 0, designMax = 0;
     let designDesc = "";
 
     if (inputs.designStatus === 'Plans Complete') {
-        designDuration = 1;
-        designDesc = "Your plans are ready! We just need 1 month for final builder review and sub-contractor bidding.";
+        designMin = 1; designMax = 1;
+        designDesc = "Plans are ready! Only time needed for final builder review and bidding.";
     } else if (inputs.designStatus === 'In Progress') {
-        designDuration = 3;
-        designDesc = "Since you've started design, we'll need a few months to finalize engineering and selections.";
+        designMin = 2; designMax = 4;
+        designDesc = "Finish engineering and make final material selections.";
     } else {
-        designDuration = 5;
-        designDesc = "Full custom design from concept to construction docs tailored to your lifestyle.";
+        designMin = 3; designMax = 6;
+        designDesc = "Full custom design process including architectural concepts and revisions.";
     }
 
     phases.push({
         name: 'Design & Bidding',
-        durationMonths: designDuration,
+        minDuration: designMin,
+        maxDuration: designMax,
         description: designDesc,
         color: 'bg-purple-500'
     });
 
 
-    // --- Phase 3: Permitting ---
-    // This is static for now, as we can't really guess by city without a database
+    // --- Phase 3: Permitting (High Variance) ---
     phases.push({
         name: 'Permits & Approvals',
-        durationMonths: 3,
-        description: "Submission to the city/county for building permits. This timeline varies heavily by municipality.",
+        minDuration: 2,
+        maxDuration: 4,
+        description: "City or county review of your construction documents.",
+        delayWarning: "Permitting timelines are outside our control and city backlogs change weekly. We buffer for this, but be prepared for delays.",
         color: 'bg-orange-500'
     });
 
 
     // --- Phase 4: Construction ---
-    // Standard custom home is ~10-12 months
-    const buildDuration = 11;
     phases.push({
         name: 'Construction',
-        durationMonths: buildDuration,
-        description: "From foundation to final walkthrough. Excavation, framing, systems, and finishes.",
+        minDuration: 10,
+        maxDuration: 13,
+        description: "From foundation pour to final walkthrough and keys.",
+        delayWarning: "Weather and material availability can impact the build schedule.",
         color: 'bg-green-500'
     });
 
 
-    // --- Calculation Loop ---
-    let current = new Date();
+    // For visualizing phases linearly, we usually just show the "Max" or "Avg" timeline 
+    // to give them a realistic roadmap, but display the "Range" in text.
+    // Let's track a single visual timeline based on MAX duration to be safe/conservative.
+    let visualCurrent = new Date();
+
     const resultPhases = [];
-    let totalMonths = 0;
+    let minTotalMonths = 0;
+    let maxTotalMonths = 0;
 
     for (const phase of phases) {
-        if (phase.durationMonths <= 0) continue;
+        minTotalMonths += phase.minDuration;
+        maxTotalMonths += phase.maxDuration;
 
-        const start = new Date(current);
-        const end = addMonths(current, phase.durationMonths);
-        current = end; // Advance time
-
-        totalMonths += phase.durationMonths;
+        // For the visual timeline, we use Max duration to prevent over-promising
+        const start = new Date(visualCurrent);
+        const end = addMonths(visualCurrent, phase.maxDuration);
+        visualCurrent = end;
 
         resultPhases.push({
             name: phase.name,
+            minDuration: phase.minDuration,
+            maxDuration: phase.maxDuration,
             startDate: start,
             endDate: end,
             description: phase.description,
+            delayWarning: phase.delayWarning,
             color: phase.color
         });
     }
 
     return {
-        totalMonths,
-        moveInDate: current,
+        minTotalMonths,
+        maxTotalMonths,
+        moveInDateMin: addMonths(new Date(), minTotalMonths),
+        moveInDateMax: addMonths(new Date(), maxTotalMonths),
         phases: resultPhases
     };
 };

@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { type ClientConfig } from '../config/clients';
 import { calculateAdjustedTimeline, formatDate, type TimelineResult, type TimelineInputs } from '../services/TimelineLogic';
 import { LocationCostService } from '../services/LocationCostService';
-import { CheckCircle2, ArrowRight, ArrowLeft, Loader2, ShieldCheck, MapPin, Calendar as CalendarIcon, PiggyBank, PenTool, Check } from 'lucide-react';
+import { CheckCircle2, ArrowRight, ArrowLeft, Loader2, ShieldCheck, MapPin, Calendar as CalendarIcon, PiggyBank, PenTool, Check, AlertTriangle } from 'lucide-react';
 
 interface TimelineGeneratorProps {
     client: ClientConfig;
@@ -127,10 +127,10 @@ export const TimelineGenerator: React.FC<TimelineGeneratorProps> = ({ client }) 
                 financing,
                 designStatus,
                 targetMoveIn: moveInGoal,
-                calculatedMoveIn: formatDate(timelineResult.moveInDate),
-                totalMonths: timelineResult.totalMonths
+                calculatedMoveIn: `${formatDate(timelineResult.moveInDateMin)} - ${formatDate(timelineResult.moveInDateMax)}`,
+                totalMonths: `${timelineResult.minTotalMonths}-${timelineResult.maxTotalMonths} months`
             },
-            sales_note: `Goal: ${moveInGoal}. Reality: ${formatDate(timelineResult.moveInDate)} (${timelineResult.totalMonths}mo build).`
+            sales_note: `Goal: ${moveInGoal}. Reality: ${formatDate(timelineResult.moveInDateMin)}-${formatDate(timelineResult.moveInDateMax)} (${timelineResult.minTotalMonths}-${timelineResult.maxTotalMonths}mo).`
         };
 
         if (client.webhookUrl) {
@@ -154,8 +154,8 @@ export const TimelineGenerator: React.FC<TimelineGeneratorProps> = ({ client }) 
         <button
             onClick={onClick}
             className={`w-full text-left p-5 rounded-2xl border transition-all duration-200 group relative overflow-hidden ${selected
-                ? 'border-purple-500 bg-purple-50 shadow-md shadow-purple-100 ring-1 ring-purple-500'
-                : 'border-zinc-200 hover:border-zinc-300 hover:bg-zinc-50 hover:shadow-sm bg-white'
+                    ? 'border-purple-500 bg-purple-50 shadow-md shadow-purple-100 ring-1 ring-purple-500'
+                    : 'border-zinc-200 hover:border-zinc-300 hover:bg-zinc-50 hover:shadow-sm bg-white'
                 }`}
         >
             <div className="flex justify-between items-center relative z-10">
@@ -355,7 +355,8 @@ export const TimelineGenerator: React.FC<TimelineGeneratorProps> = ({ client }) 
 
             <h2 className="text-3xl md:text-4xl font-serif font-bold text-slate-900 mb-4">Your Timeline Is Ready 🎉</h2>
             <p className="text-zinc-500 text-lg mb-10 max-w-sm mx-auto">
-                We've built a custom roadmap based on your project details. <strong>Where should we send it?</strong>
+                We have built a custom roadmap based on your answers.<br />
+                <strong>Where should we send your timeline?</strong>
             </p>
 
             <form onSubmit={handleGateSubmit} className="space-y-4 max-w-md mx-auto bg-white p-8 rounded-3xl border border-zinc-100 shadow-2xl shadow-slate-200/50 relative overflow-hidden">
@@ -400,14 +401,15 @@ export const TimelineGenerator: React.FC<TimelineGeneratorProps> = ({ client }) 
                             Official Construction Estimate
                         </span>
 
-                        <h2 className="text-xl text-zinc-300 font-medium mb-2">Based on your inputs, you can move in around:</h2>
+                        <h2 className="text-xl text-zinc-300 font-medium mb-4">Based on your inputs, your estimated move-in window is:</h2>
 
-                        <div className="text-4xl md:text-7xl font-serif font-bold text-white mb-6 tracking-tight">
-                            {formatDate(result.moveInDate).split(' ')[0]} - {formatDate(new Date(result.moveInDate.getTime() + 1000 * 60 * 60 * 24 * 60)).split(' ')[0]} <span className="text-white/40 font-italic">{formatDate(result.moveInDate).split(' ')[1]}</span>
+                        <div className="text-4xl md:text-6xl font-serif font-bold text-white mb-6 tracking-tight">
+                            {formatDate(result.moveInDateMin)} - {formatDate(result.moveInDateMax)}
                         </div>
 
                         <div className="inline-flex items-center gap-2 text-white/60 text-sm bg-slate-800/50 px-4 py-2 rounded-lg border border-white/5 backdrop-blur-md">
-                            <CheckCircle2 size={14} className="text-green-400" /> Based on a standard <strong>{result.totalMonths}-month</strong> build cycle
+                            <CheckCircle2 size={14} className="text-green-400" />
+                            Total Duration: <strong>{result.minTotalMonths} - {result.maxTotalMonths} months</strong>
                         </div>
                     </div>
                 </div>
@@ -429,11 +431,22 @@ export const TimelineGenerator: React.FC<TimelineGeneratorProps> = ({ client }) 
                                     <div className={`absolute top-0 left-0 w-1.5 h-full ${phase.color} opacity-80`}></div>
                                     <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
                                         <div>
-                                            <span className="text-[10px] font-black text-zinc-400 uppercase tracking-[0.2em] mb-2 block">
-                                                {formatDate(phase.startDate)} — {formatDate(phase.endDate)}
-                                            </span>
+                                            <div className="flex items-center gap-2 mb-2">
+                                                <span className="text-[10px] font-black text-zinc-400 uppercase tracking-[0.2em]">
+                                                    {phase.minDuration}-{phase.maxDuration} MONTHS
+                                                </span>
+                                            </div>
+
                                             <h4 className="text-xl font-bold text-slate-900 mb-2 font-serif">{phase.name}</h4>
-                                            <p className="text-zinc-500 text-sm leading-relaxed max-w-lg">{phase.description}</p>
+                                            <p className="text-zinc-500 text-sm leading-relaxed max-w-lg mb-4">{phase.description}</p>
+
+                                            {/* Delay Warning */}
+                                            {phase.delayWarning && (
+                                                <div className="mt-4 bg-amber-50 border border-amber-100 p-4 rounded-xl flex gap-3 text-sm text-amber-800">
+                                                    <AlertTriangle className="shrink-0 mt-0.5 text-amber-500" size={16} />
+                                                    <p><strong>Delay Warning:</strong> {phase.delayWarning}</p>
+                                                </div>
+                                            )}
                                         </div>
                                     </div>
                                 </div>
