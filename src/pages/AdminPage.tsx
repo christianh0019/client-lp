@@ -1,21 +1,16 @@
 import React, { useState, useEffect } from 'react';
 import { AirtableService } from '../services/AirtableService';
 import type { ClientConfig } from '../config/clients';
-import { Loader2, RefreshCw, Eye, AlertCircle } from 'lucide-react';
+import { AIRTABLE_CONSTANTS } from '../config/constants';
+import { Loader2, RefreshCw, Eye, AlertCircle, Lock } from 'lucide-react';
 
 export const AdminPage: React.FC = () => {
-    // Environment Token
-    const envToken = import.meta.env.VITE_AIRTABLE_TOKEN || '';
 
-    // Stored Token (Fallback)
-    const [customToken, setCustomToken] = useState(localStorage.getItem('admin_api_token') || '');
-    const [baseId, setBaseId] = useState(localStorage.getItem('admin_base_id') || '');
-
-    // Effective Token
-    const token = envToken || customToken;
-
-    // Configured check
-    const [isConfigured, setIsConfigured] = useState(!!baseId && !!token);
+    // Check local storage or env for token
+    const storedToken = localStorage.getItem('admin_api_token') || import.meta.env.VITE_AIRTABLE_TOKEN || '';
+    const [isAuthenticated, setIsAuthenticated] = useState(!!storedToken);
+    const [inputToken, setInputToken] = useState('');
+    const [authError, setAuthError] = useState('');
 
     const [clients, setClients] = useState<ClientConfig[]>([]);
     const [isLoading, setIsLoading] = useState(false);
@@ -25,107 +20,89 @@ export const AdminPage: React.FC = () => {
     const [viewingClient, setViewingClient] = useState<ClientConfig | null>(null);
 
     useEffect(() => {
-        // Init logic on load if we have data
-        if (baseId && token) {
-            // Re-init service just in case
-            AirtableService.init(baseId, token);
-            // We don't auto-fetch here to avoid loop or unnecessary calls if keys are wrong
-            // But usually good to try if we think we are configured.
-            if (isConfigured) {
-                fetchClients();
-            }
+        if (isAuthenticated && storedToken) {
+            // Init with hardcoded Base ID and the token we have
+            AirtableService.init(AIRTABLE_CONSTANTS.BASE_ID, storedToken);
+            fetchClients();
         }
-    }, [baseId, token, isConfigured]);
+    }, [isAuthenticated, storedToken]);
 
-    const handleSaveConfig = () => {
-        if (baseId && (envToken || customToken)) {
-            localStorage.setItem('admin_base_id', baseId);
-            if (!envToken && customToken) {
-                localStorage.setItem('admin_api_token', customToken);
-            }
-            AirtableService.init(baseId, envToken || customToken);
-            setIsConfigured(true);
-            // Fetch immediately
-            setTimeout(fetchClients, 100);
+    const handleLogin = (e: React.FormEvent) => {
+        e.preventDefault();
+        // Validation: Must look like a PAT
+        if (inputToken.startsWith('pat') || inputToken.length > 20) {
+            localStorage.setItem('admin_api_token', inputToken);
+            setIsAuthenticated(true);
+            setAuthError('');
+            window.location.reload();
+        } else {
+            setAuthError('Invalid Token Format (must start with pat...)');
         }
     };
 
-    const handleDisconnect = () => {
-        localStorage.removeItem('admin_base_id');
+    const handleLogout = () => {
         localStorage.removeItem('admin_api_token');
-        window.location.reload();
+        setIsAuthenticated(false);
+        setInputToken('');
+        setClients([]);
     };
 
     const fetchClients = async () => {
         setIsLoading(true);
         setErrorMsg('');
         try {
-            // Ensure service is ready
-            AirtableService.init(baseId, token);
+            // Re-ensure service is ready (redundant but safe)
+            AirtableService.init(AIRTABLE_CONSTANTS.BASE_ID, storedToken);
 
             const data = await AirtableService.getAllClients();
             setClients(data);
         } catch (err: any) {
             console.error(err);
             if (err.message === "Base not initialized") {
-                setErrorMsg("Configuration missing. Please reconnect.");
-                setIsConfigured(false);
+                setErrorMsg("System Error: Credentials missing or invalid.");
             } else if (err.error === 'NOT_FOUND') {
-                setErrorMsg("Could not find table '🤝 Clients'. Please check the table name exactly (including emoji).");
+                setErrorMsg("Could not find table '🤝 Clients'. Please check Airtable.");
             } else if (err.statusCode === 401 || err.statusCode === 403) {
-                setErrorMsg("Unauthorized. Check your API Token or Base ID.");
-                // Optional: Force disconnect if unauthorized? setIsConfigured(false);
+                setErrorMsg("Unauthorized: API Token is invalid or expired.");
+                // Ensure we don't get stuck in a loop, maybe show a "Re-login" button
             } else {
-                setErrorMsg(err.message || "Failed to fetch clients. Check console.");
+                setErrorMsg(err.message || "Failed to fetch clients.");
             }
         }
         setIsLoading(false);
     };
 
-    if (!isConfigured) {
+    if (!isAuthenticated) {
         return (
-            <div className="p-8 max-w-md mx-auto mt-20 bg-white shadow-xl rounded-2xl border border-zinc-200">
-                <h1 className="text-2xl font-bold mb-4">Admin Connections</h1>
-                <p className="text-sm text-zinc-500 mb-6">
-                    Enter your Airtable details to connect.
-                    {!envToken && <span className="block mt-2 text-amber-600">⚠️ Server environment token not found. Please enter manually.</span>}
-                </p>
-
-                <div className="space-y-4">
-                    <div>
-                        <label className="text-xs font-bold uppercase block mb-1">Base ID</label>
-                        <input
-                            value={baseId}
-                            onChange={e => setBaseId(e.target.value)}
-                            placeholder="app..."
-                            className="w-full border p-2 rounded-lg"
-                        />
-                    </div>
-
-                    {!envToken && (
-                        <div>
-                            <label className="text-xs font-bold uppercase block mb-1">API Token (PAT)</label>
-                            <input
-                                value={customToken}
-                                onChange={e => setCustomToken(e.target.value)}
-                                placeholder="pat..."
-                                type="password"
-                                className="w-full border p-2 rounded-lg"
-                            />
-                            <p className="text-[10px] text-zinc-400 mt-1">Saved locally to your browser.</p>
+            <div className="h-screen w-full flex items-center justify-center bg-zinc-50">
+                <div className="bg-white p-8 rounded-2xl border border-zinc-200 shadow-xl max-w-sm w-full">
+                    <div className="flex flex-col items-center mb-6">
+                        <div className="w-12 h-12 bg-slate-900 rounded-xl flex items-center justify-center text-white mb-4">
+                            <Lock size={20} />
                         </div>
-                    )}
-
-                    <button
-                        onClick={handleSaveConfig}
-                        disabled={!baseId || (!envToken && !customToken)}
-                        className="w-full bg-slate-900 text-white py-3 rounded-lg font-bold disabled:opacity-50"
-                    >
-                        Connect
-                    </button>
-                    <div className="text-xs bg-zinc-50 p-2 rounded border border-zinc-200 text-zinc-500">
-                        <strong>Required Table:</strong> '🤝 Clients'
+                        <h1 className="text-xl font-bold font-serif">Admin Portal</h1>
+                        <p className="text-zinc-500 text-xs">Enter API Token to Access</p>
                     </div>
+
+                    <form onSubmit={handleLogin} className="space-y-4">
+                        <div>
+                            <input
+                                type="password"
+                                value={inputToken}
+                                onChange={e => setInputToken(e.target.value)}
+                                placeholder="Airtable API Token (pat...)"
+                                className="w-full border p-3 rounded-lg text-center"
+                                autoFocus
+                            />
+                        </div>
+                        {authError && <p className="text-red-500 text-xs text-center font-bold">{authError}</p>}
+                        <button
+                            type="submit"
+                            className="w-full bg-slate-900 text-white py-3 rounded-lg font-bold hover:bg-slate-800 transition-colors"
+                        >
+                            Enter
+                        </button>
+                    </form>
                 </div>
             </div>
         );
@@ -136,10 +113,10 @@ export const AdminPage: React.FC = () => {
             <header className="flex justify-between items-center mb-12">
                 <div>
                     <h1 className="text-3xl font-bold font-serif">Client Manager</h1>
-                    <p className="text-zinc-500 text-sm">Connected to Base: {baseId}</p>
+                    <p className="text-zinc-500 text-sm">Managing Base: {AIRTABLE_CONSTANTS.BASE_ID}</p>
                 </div>
                 <div className="flex gap-4">
-                    <button onClick={handleDisconnect} className="text-red-500 text-sm hover:underline">Disconnect</button>
+                    <button onClick={handleLogout} className="text-zinc-400 hover:text-red-500 text-sm">Sign Out</button>
                     <button
                         onClick={fetchClients}
                         className="bg-slate-900 hover:bg-slate-800 text-white px-4 py-2 rounded-lg flex items-center gap-2 font-bold transition-all"
@@ -238,7 +215,7 @@ export const AdminPage: React.FC = () => {
                                 <tr>
                                     <td colSpan={4} className="p-8 text-center text-zinc-400 italic">
                                         No clients found in Airtable table '🤝 Clients'.<br />
-                                        <span className="text-xs opacity-70">Make sure your Base ID matches and the table name is exact.</span>
+                                        <span className="text-xs opacity-70">Make sure your Base ID is correct.<br />ID: {AIRTABLE_CONSTANTS.BASE_ID}</span>
                                     </td>
                                 </tr>
                             )}

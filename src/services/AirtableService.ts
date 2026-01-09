@@ -1,23 +1,16 @@
 import Airtable from 'airtable';
 import type { ClientConfig } from '../config/clients';
+import { AIRTABLE_CONSTANTS } from '../config/constants';
 
-const API_KEY = import.meta.env.VITE_AIRTABLE_TOKEN;
-// We might need to ask for Base ID if not in env, but for now we'll assume it's passed or env
-// Since we don't have a Base ID yet, I will make the service accept it or default if in env.
-const BASE_ID = import.meta.env.VITE_AIRTABLE_BASE_ID;
+const ENV_API_KEY = import.meta.env.VITE_AIRTABLE_TOKEN;
 
 export class AirtableService {
     private static base: Airtable.Base;
 
-    // Allow dynamic initialization if Base ID/Token is user-provided in Admin UI
-    static init(baseId: string = BASE_ID, apiKey: string = API_KEY) {
+    // Allow dynamic initialization 
+    static init(baseId: string = AIRTABLE_CONSTANTS.BASE_ID, apiKey: string = ENV_API_KEY) {
         if (!apiKey) {
-            console.error("Airtable Token Missing (Env or Param)");
-            // We don't return here, we let it fail or we set a flag? 
-            // Actually, we can't init.
-            // But we shouldn't fail silently.
-            // Let's just try to init, Airtable lib will throw or fail later.
-            // Better: Set base to null.
+            console.error("Airtable Token Missing");
             this.base = undefined as any;
             return;
         }
@@ -76,7 +69,6 @@ export class AirtableService {
                 'Facebook Pixel ID': client.pixelId,
                 'Booking Widget ID': client.bookingWidgetId,
                 'Logo URL': client.logo || '',
-                // Combine branding if needed, or keeping it flat for now
                 'Primary Color': client.branding?.primaryColor || ''
             };
 
