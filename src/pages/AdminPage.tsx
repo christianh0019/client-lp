@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { AirtableService } from '../services/AirtableService';
 import type { ClientConfig } from '../config/clients';
-import { Loader2, RefreshCw, Eye } from 'lucide-react';
+import { Loader2, RefreshCw, Eye, AlertCircle } from 'lucide-react';
 
 export const AdminPage: React.FC = () => {
     const [apiKey] = useState(import.meta.env.VITE_AIRTABLE_TOKEN || '');
@@ -32,10 +32,26 @@ export const AdminPage: React.FC = () => {
         }
     };
 
+    const [errorMsg, setErrorMsg] = useState('');
+
     const fetchClients = async () => {
         setIsLoading(true);
-        const data = await AirtableService.getAllClients();
-        setClients(data);
+        setErrorMsg('');
+        try {
+            const data = await AirtableService.getAllClients();
+            setClients(data);
+        } catch (err: any) {
+            console.error(err);
+            if (err.message === "Base not initialized") {
+                setErrorMsg("Configuration missing. Please reconnect.");
+            } else if (err.error === 'NOT_FOUND') {
+                setErrorMsg("Could not find table '🤝 Clients'. Please check the table name exactly (including emoji).");
+            } else if (err.statusCode === 401 || err.statusCode === 403) {
+                setErrorMsg("Unauthorized. Check your API Token or Base ID.");
+            } else {
+                setErrorMsg(err.message || "Failed to fetch clients. Check console.");
+            }
+        }
         setIsLoading(false);
     };
 
@@ -127,6 +143,13 @@ export const AdminPage: React.FC = () => {
                             <button onClick={() => setViewingClient(null)} className="px-6 py-2 bg-zinc-100 hover:bg-zinc-200 rounded-lg font-bold text-zinc-900">Close</button>
                         </div>
                     </div>
+                </div>
+            )}
+
+            {errorMsg && (
+                <div className="bg-red-50 text-red-600 p-4 rounded-lg mb-6 flex items-center gap-2 border border-red-100">
+                    <AlertCircle size={20} />
+                    <span>{errorMsg}</span>
                 </div>
             )}
 

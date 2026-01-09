@@ -41,14 +41,14 @@ export class AirtableService {
     }
 
     static async getAllClients(): Promise<ClientConfig[]> {
-        if (!this.base) return [];
+        if (!this.base) throw new Error("Base not initialized");
 
         try {
             const records = await this.base('🤝 Clients').select().all();
             return records.map(this.mapRecordToConfig);
-        } catch (error) {
+        } catch (error: any) {
             console.error("Error fetching all clients:", error);
-            return [];
+            throw error;
         }
     }
 
