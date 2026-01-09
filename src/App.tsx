@@ -5,6 +5,7 @@ import { getClientConfig, type ClientConfig } from './config/clients';
 import { AdminPage } from './pages/AdminPage';
 import { AirtableService } from './services/AirtableService';
 import { CheckCircle2, Loader2 } from 'lucide-react';
+import { AIRTABLE_CONSTANTS } from './config/constants';
 
 function App() {
   const { pathname } = useLocation();
@@ -16,10 +17,12 @@ function App() {
   useEffect(() => {
     const loadClient = async () => {
       setLoading(true);
-      // Ensure Airtable is ready (using env var base id for public facing site)
-      const envBaseId = import.meta.env.VITE_AIRTABLE_BASE_ID;
-      if (envBaseId) {
-        AirtableService.init(envBaseId);
+      // Use hardcoded Base ID for consistency, fallback to env for older compatibility
+      const baseId = AIRTABLE_CONSTANTS.BASE_ID || import.meta.env.VITE_AIRTABLE_BASE_ID;
+
+      if (baseId) {
+        // init checks for API key internally from env
+        AirtableService.init(baseId);
         try {
           // Skip airtable for 'admin' path to avoid wasted calls
           if (slug.toLowerCase() !== 'admin') {
