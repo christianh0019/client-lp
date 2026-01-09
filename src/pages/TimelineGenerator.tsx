@@ -339,7 +339,7 @@ export const TimelineGenerator: React.FC<TimelineGeneratorProps> = ({ client }) 
             <h2 className="text-3xl font-serif font-bold text-slate-900 mb-2">Your Personalized Timeline Is Ready 🎉</h2>
             <p className="text-zinc-500 mb-8">
                 We have built a custom roadmap based on your answers.<br />
-                Enter your details to view your estimated move-in window.
+                <strong>Where do we send your timeline?</strong>
             </p>
 
             <form onSubmit={handleGateSubmit} className="space-y-4 max-w-md mx-auto bg-white p-6 rounded-2xl border border-zinc-100 shadow-xl shadow-slate-200/50">

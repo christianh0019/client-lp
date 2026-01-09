@@ -87,7 +87,7 @@ function App() {
             </div>
             <span className="text-green-600 flex items-center gap-2">
               <CheckCircle2 size={16} />
-              Free Budget Tool
+              {pathname.includes('/timeline') ? 'Custom Home Timeline Tool' : 'Free Budget Tool'}
             </span>
           </div>
         </div>
