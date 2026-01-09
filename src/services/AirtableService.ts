@@ -90,40 +90,49 @@ export class AirtableService {
     }
 
     private static mapRecordToConfig(record: any): ClientConfig {
-        let rawSlug = record.get('Slug');
+        const rawSlug = AirtableService.getString(record.get('Slug'));
+        const cleanId = rawSlug.replace(/^\//, ''); // Remove leading slash if present
 
-        // Handle Lookups/Rollups (Strings often wrapped in Array)
-        if (Array.isArray(rawSlug)) {
-            rawSlug = rawSlug[0];
-        }
+        // Use parsed slug, or fallback to record ID if empty
+        const finalId = cleanId || record.id;
 
-        // Ensure String and handle objects if any weirdness
-        let slugStr = rawSlug ? String(rawSlug) : '';
-
-        // Clean: Remove leading slash for internal ID consistency
-        const cleanId = slugStr.replace(/^\//, '');
-
-        // Fallback checks
-        if (!cleanId || cleanId === '[object Object]') {
-            // Try to use record ID if slug failed hard or is empty
-            return {
-                id: record.id,
-                name: record.get('Name') || 'Unknown',
-                branding: { primaryColor: '#000000' }
-            } as ClientConfig;
-        }
+        // Use helper for safe extraction
+        const logoUrl = AirtableService.getString(record.get('Logo URL'));
+        const primaryColor = AirtableService.getString(record.get('Primary Color'));
 
         return {
-            id: cleanId,
-            name: record.get('Name'),
-            webhookUrl: record.get('Webhook URL'),
-            pixelId: record.get('Facebook Pixel ID'),
-            bookingWidgetId: record.get('Booking Widget ID'),
-            logo: record.get('Logo URL'),
+            id: finalId,
+            name: AirtableService.getString(record.get('Name')) || 'Unnamed Client',
+            webhookUrl: AirtableService.getString(record.get('Webhook URL')),
+            pixelId: AirtableService.getString(record.get('Facebook Pixel ID')),
+            bookingWidgetId: AirtableService.getString(record.get('Booking Widget ID')),
+            logo: logoUrl,
             branding: {
-                logo: record.get('Logo URL'),
-                primaryColor: record.get('Primary Color')
+                logo: logoUrl,
+                primaryColor: primaryColor
             }
         };
+    }
+
+    // Helper to safely extract string from various Airtable field types
+    private static getString(value: any): string {
+        if (!value) return '';
+
+        // Recursively handle arrays (Lookups, Rollups)
+        if (Array.isArray(value)) {
+            return AirtableService.getString(value[0]);
+        }
+
+        // Handle Objects (Attachments, Linked Records)
+        if (typeof value === 'object') {
+            // Attachments have .url
+            if (value.url) return value.url;
+            // Linked records have .name or .text
+            if (value.name) return value.name;
+            // Fallback: try string conversion but avoid [object Object] if possible
+            return '';
+        }
+
+        return String(value);
     }
 }
