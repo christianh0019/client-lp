@@ -4,6 +4,7 @@ export interface ClientConfig {
     webhookUrl: string;
     pixelId: string;
     bookingWidgetId: string; // To allow unique calendars per client
+    minBudget?: number; // Minimum budget to qualify as a Lead (default 699000)
     logo?: string; // Optional URL for client logo
     phoneNumber?: string; // Optional phone number for CTA
     branding?: {
@@ -19,6 +20,7 @@ export const CLIENTS: Record<string, ClientConfig> = {
         webhookUrl: 'https://hook.us2.make.com/your-default-webhook', // Replace with actual default or placeholder
         pixelId: '', // Empty initially, handled safely
         bookingWidgetId: 'xPaYSZulboJxxCpHa9dY', // Default Widget ID
+        minBudget: 699000,
         logo: 'https://placehold.co/200x80/png?text=Demo+Builder'
     },
     'homestead': {
