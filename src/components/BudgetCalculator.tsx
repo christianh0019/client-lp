@@ -58,6 +58,7 @@ export const BudgetCalculator: React.FC<BudgetCalculatorProps> = ({ initialClien
     const [isAnalyzing, setIsAnalyzing] = useState(false);
     const [generatedReport, setGeneratedReport] = useState<GeneratedReport | null>(null);
     const [showBooking, setShowBooking] = useState(false);
+    const [isQualified, setIsQualified] = useState(true);
 
     // Educational Modal State
     const [viewingArticle, setViewingArticle] = useState<Article | null>(null);
@@ -137,12 +138,19 @@ export const BudgetCalculator: React.FC<BudgetCalculatorProps> = ({ initialClien
 
         setModalError('');
 
-        // Track Lead
-        PixelService.track('Lead', {
-            content_name: 'Budget Calculator Submission',
-            currency: 'USD',
-            value: totalBudget ?? 0
-        });
+        // --- Lead Scoring Logic ---
+        const MIN_BUDGET = client.minBudget || 699000; // Default 699k
+        const qualified = (totalBudget ?? 0) >= MIN_BUDGET;
+        setIsQualified(qualified);
+
+        // Track Lead (Conditional)
+        if (qualified) {
+            PixelService.track('Lead', {
+                content_name: 'Budget Calculator Submission',
+                currency: 'USD',
+                value: totalBudget ?? 0
+            });
+        }
 
         // 4. Reveal Results & Trigger Analysis
         setIsCalculated(true);
@@ -171,6 +179,8 @@ export const BudgetCalculator: React.FC<BudgetCalculatorProps> = ({ initialClien
             client: client.name,
             source: 'Budget Calculator LP',
             timestamp: new Date().toISOString(),
+            is_qualified: qualified,
+            quality_tier: qualified ? 'Qualified' : 'NurtureOnly',
             contact: { name, email, phone, agreedToTerms },
             sales_note: salesNote, // AI Summary for Sales Rep
             project: {
@@ -858,15 +868,24 @@ export const BudgetCalculator: React.FC<BudgetCalculatorProps> = ({ initialClien
                                                     </p>
                                                 </div>
 
-                                                <button
-                                                    onClick={() => setShowBooking(true)}
-                                                    className={`w-full py-4 rounded-xl font-bold text-white shadow-lg flex items-center justify-center gap-2 transition-transform hover:scale-[1.02] active:scale-[0.98] ${generatedReport.urgency === 'high'
-                                                        ? 'bg-gradient-to-r from-orange-500 to-red-600 shadow-orange-500/30'
-                                                        : 'bg-slate-900 hover:bg-slate-800 shadow-slate-900/20'
-                                                        }`}
-                                                >
-                                                    {generatedReport.cta.text} <ArrowRight size={18} />
-                                                </button>
+                                                {isQualified ? (
+                                                    <button
+                                                        onClick={() => setShowBooking(true)}
+                                                        className={`w-full py-4 rounded-xl font-bold text-white shadow-lg flex items-center justify-center gap-2 transition-transform hover:scale-[1.02] active:scale-[0.98] ${generatedReport.urgency === 'high'
+                                                            ? 'bg-gradient-to-r from-orange-500 to-red-600 shadow-orange-500/30'
+                                                            : 'bg-slate-900 hover:bg-slate-800 shadow-slate-900/20'
+                                                            }`}
+                                                    >
+                                                        {generatedReport.cta.text} <ArrowRight size={18} />
+                                                    </button>
+                                                ) : (
+                                                    <div className="bg-zinc-100 p-4 rounded-xl text-center">
+                                                        <h4 className="font-bold text-slate-900 mb-1">Report Sent to Inbox 📬</h4>
+                                                        <p className="text-sm text-zinc-500">
+                                                            We've emailed you this full feasibility report. Check your inbox for next steps on financing and land prep.
+                                                        </p>
+                                                    </div>
+                                                )}
                                             </>
                                         )}
                                     </motion.div>
