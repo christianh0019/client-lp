@@ -199,21 +199,33 @@ export const BudgetCalculator: React.FC<BudgetCalculatorProps> = ({ initialClien
         // Send Webhook (Fire & Forget to not block UI)
         try {
             if (client.webhookUrl) {
-                // Using no-cors mode to prevent Preflight failures common with GHL webhooks
-                // note: 'application/json' is not a simple header, so we avoid setting it
-                // GHL usually parses the body automatically.
+                // DEBUG: Alerting to trace execution
+                // alert(`Sending webhook to: ${client.webhookUrl}`);
+
+                // Revert to Standard CORS for debugging to see real error in console
                 fetch(client.webhookUrl, {
                     method: 'POST',
-                    mode: 'no-cors',
                     keepalive: true,
+                    headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify(payload)
-                }).then(() => {
-                    // Response is opaque in no-cors, so we assume success if no network error
-                    console.log('Webhook Request Sent (Opaque Mode)');
-                }).catch(err => console.error('Webhook Error:', err));
+                }).then(response => {
+                    if (response.ok) {
+                        console.log('Webhook Success');
+                        // alert('Webhook Success!');
+                    } else {
+                        console.error('Webhook Failed', response.status);
+                        // alert(`Webhook Failed: ${response.status}`);
+                    }
+                }).catch(err => {
+                    console.error('Webhook Error', err);
+                    // alert(`Webhook Error: ${err.message}`);
+                });
+            } else {
+                // alert('No Webhook URL found for client');
             }
         } catch (e) {
             console.error('Submission Error:', e);
+            // alert(`Submission Logic Error: ${e}`);
         }
 
         // Simulate AI Analysis Delay
