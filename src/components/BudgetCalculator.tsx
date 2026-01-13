@@ -200,6 +200,8 @@ export const BudgetCalculator: React.FC<BudgetCalculatorProps> = ({ initialClien
         try {
             if (client.webhookUrl) {
                 console.log('Sending webhook via proxy...');
+                // DEBUG: Trace Alerts
+                // alert(`DEBUG: Attempting Proxy to ${client.webhookUrl}`);
 
                 fetch('/api/webhook', {
                     method: 'POST',
@@ -209,19 +211,28 @@ export const BudgetCalculator: React.FC<BudgetCalculatorProps> = ({ initialClien
                         payload: payload
                     })
                 }).then(async response => {
-                    const data = await response.json().catch(() => ({}));
+                    // Try to parse JSON, fallback to text if HTML (e.g. 404/500 pages)
+                    const text = await response.text();
+                    let data;
+                    try { data = JSON.parse(text); } catch (e) { data = { error: text }; }
+
                     if (response.ok) {
                         console.log('Webhook Success (Proxy)');
+                        // alert('DEBUG: Proxy Success (200 OK)');
                     } else {
                         console.error('Webhook Failed (Proxy)', response.status, data);
-                        // Optional: alert(`Error: ${data.error || 'Connection Failed'}`);
+                        alert(`DEBUG: Proxy Failed! Status: ${response.status}\nError: ${JSON.stringify(data)}`);
                     }
                 }).catch(err => {
                     console.error('Webhook Network Error', err);
+                    alert(`DEBUG: Network Error: ${err.message}`);
                 });
+            } else {
+                alert('DEBUG: Client Config missing webhookUrl');
             }
-        } catch (e) {
+        } catch (e: any) {
             console.error('Submission Logic Error:', e);
+            alert(`DEBUG: Logic Error: ${e.message || e}`);
         }
 
         // Simulate AI Analysis Delay
