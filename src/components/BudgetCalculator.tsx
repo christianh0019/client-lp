@@ -126,142 +126,161 @@ export const BudgetCalculator: React.FC<BudgetCalculatorProps> = ({ initialClien
     };
 
     const handleModalSubmit = async () => {
-        // 3. Final Validation (Contact Info)
-        if (!name || !email || !phone) {
-            setModalError('Please fill in all fields.');
-            return;
-        }
-        if (!agreedToTerms) {
-            setModalError('Please agree to receive communication to proceed.');
-            return;
-        }
-
-        setModalError('');
-
-        // --- Lead Scoring Logic ---
-        const MIN_BUDGET = client.minBudget || 699000; // Default 699k
-        const qualified = (totalBudget ?? 0) >= MIN_BUDGET;
-        setIsQualified(qualified);
-
-        // Track Lead (Conditional)
-        if (qualified) {
-            PixelService.track('Lead', {
-                content_name: 'Budget Calculator Submission',
-                currency: 'USD',
-                value: totalBudget ?? 0
-            });
-        }
-
-        // 4. Reveal Results & Trigger Analysis
-        setIsCalculated(true);
-        setShowModal(false);
-        setIsAnalyzing(true);
-        setGeneratedReport(null);
-        setShowBooking(false);
-
-        // Generate Sales Note
-        const reportData = {
-            breakdown,
-            feasibility,
-            inputs: {
-                hasLand: hasLand === true,
-                hasPlans: hasPlans === true,
-                hasEngineering: hasEngineering === true,
-                city,
-                name,
-                targetSqFt: targetSqFt ?? 0
-            }
-        };
-        const salesNote = ReportGenerator.generateSalesNote(reportData);
-
-        // Prepare Payload
-        const payload = {
-            client: client.name,
-            source: 'Budget Calculator LP',
-            timestamp: new Date().toISOString(),
-            is_qualified: qualified,
-            quality_tier: qualified ? 'Qualified' : 'NurtureOnly',
-            contact: { name, email, phone, agreedToTerms },
-            sales_note: salesNote, // AI Summary for Sales Rep
-            project: {
-                city,
-                marketData,
-                totalBudget,
-                landOwned: hasLand,
-                landCost: !hasLand ? landCost : 0,
-                targetSqFt,
-                softCosts: { hasPlans, hasEngineering, hasUtilities },
-                breakdown, // Includes hard costs, soft costs, per sq ft
-                feasibility // Status, message, color
-            }
-        };
-
-        // Send Webhook via Vercel Proxy (Solves CORS)
+        // SAFETY WRAPPER: Catch any synchronous error in logic
         try {
-            if (client.webhookUrl) {
-                // console.log('Sending webhook via proxy to:', client.webhookUrl);
+            // alert('DEBUG: Button Click Registered');
 
-                fetch('/api/webhook', {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({
-                        targetUrl: client.webhookUrl,
-                        payload: payload
-                    })
-                }).then(async response => {
-                    const contentType = response.headers.get("content-type");
-                    if (contentType && contentType.includes("text/html")) {
-                        throw new Error("Received HTML from Proxy. Possible Routing Error.");
-                    }
-
-                    const text = await response.text();
-                    let data;
-                    try { data = JSON.parse(text); } catch (e) { data = { raw: text }; }
-
-                    if (response.ok) {
-                        console.log('Webhook Success (Proxy)');
-                        // alert('Success! Lead submitted.'); 
-                    } else {
-                        console.error('Webhook Failed (Proxy)', response.status, data);
-                        alert(`System Error: Webhook Failed.\nStatus: ${response.status}\nDetails: ${JSON.stringify(data)}`);
-                    }
-                }).catch(err => {
-                    console.error('Webhook Network Error', err);
-                    alert(`Network Error: ${err.message}`);
-                });
-            } else {
-                alert('Configuration Error: Missing Webhook URL');
+            // 3. Final Validation (Contact Info)
+            if (!name || !email || !phone) {
+                setModalError('Please fill in all fields.');
+                return;
             }
-        } catch (e: any) {
-            console.error('Submission Logic Error:', e);
-            alert(`Logic Error: ${e.message}`);
-        }
+            if (!agreedToTerms) {
+                setModalError('Please agree to receive communication to proceed.');
+                return;
+            }
+            // Basic Email Validation
+            if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
+                setModalError('Please enter a valid email address.');
+                return;
+            }
 
-        // Simulate AI Analysis Delay
-        setTimeout(() => {
-            const report = ReportGenerator.generate({
-                breakdown,
-                feasibility,
-                inputs: {
-                    hasLand: hasLand === true,
-                    hasPlans: hasPlans === true,
-                    hasEngineering: hasEngineering === true,
-                    city, // Note: We use the raw city state, assuming marketData check passed
-                    name,
-                    targetSqFt: targetSqFt ?? 0
+            setModalError('');
+
+            // --- Lead Scoring Logic ---
+            const MIN_BUDGET = client.minBudget || 699000; // Default 699k
+            const qualified = (totalBudget ?? 0) >= MIN_BUDGET;
+            setIsQualified(qualified);
+
+            // Track Lead (Conditional)
+            if (qualified) {
+                PixelService.track('Lead', {
+                    content_name: 'Budget Calculator Submission',
+                    currency: 'USD',
+                    value: totalBudget ?? 0
+                });
+            }
+
+            // 4. Reveal Results & Trigger Analysis
+            setIsCalculated(true);
+            setShowModal(false);
+            setIsAnalyzing(true);
+            setGeneratedReport(null);
+            setShowBooking(false);
+
+            // Generate Sales Note
+            let salesNote = "Note generation failed";
+            try {
+                const reportData = {
+                    breakdown,
+                    feasibility,
+                    inputs: {
+                        hasLand: hasLand === true,
+                        hasPlans: hasPlans === true,
+                        hasEngineering: hasEngineering === true,
+                        city,
+                        name,
+                        targetSqFt: targetSqFt ?? 0
+                    }
+                };
+                salesNote = ReportGenerator.generateSalesNote(reportData);
+            } catch (err: any) {
+                console.error("Sales Note Generation Error", err);
+                salesNote = `Error generating note: ${err.message}`;
+            }
+
+            // Prepare Payload
+            const payload = {
+                client: client.name,
+                source: 'Budget Calculator LP',
+                timestamp: new Date().toISOString(),
+                is_qualified: qualified,
+                quality_tier: qualified ? 'Qualified' : 'NurtureOnly',
+                contact: { name, email, phone, agreedToTerms },
+                sales_note: salesNote, // AI Summary for Sales Rep
+                project: {
+                    city,
+                    marketData,
+                    totalBudget,
+                    landOwned: hasLand,
+                    landCost: !hasLand ? landCost : 0,
+                    targetSqFt,
+                    softCosts: { hasPlans, hasEngineering, hasUtilities },
+                    breakdown, // Includes hard costs, soft costs, per sq ft
+                    feasibility // Status, message, color
                 }
-            });
-            setGeneratedReport(report);
-            setIsAnalyzing(false);
-        }, 2500);
+            };
 
-        // Data Capture
-        console.log("CAPTURED LEAD DATA:", payload);
+            // Send Webhook via Vercel Proxy (Solves CORS)
+            try {
+                if (client.webhookUrl) {
+                    // console.log('Sending webhook via proxy to:', client.webhookUrl);
 
-        // Scroll to results
-        setTimeout(() => {
-            document.getElementById('results-section')?.scrollIntoView({ behavior: 'smooth' });
-        }, 100);
+                    fetch('/api/webhook', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({
+                            targetUrl: client.webhookUrl,
+                            payload: payload
+                        })
+                    }).then(async response => {
+                        const contentType = response.headers.get("content-type");
+                        if (contentType && contentType.includes("text/html")) {
+                            throw new Error("Received HTML from Proxy. Possible Routing Error.");
+                        }
+
+                        const text = await response.text();
+                        let data;
+                        try { data = JSON.parse(text); } catch (e) { data = { raw: text }; }
+
+                        if (response.ok) {
+                            console.log('Webhook Success (Proxy)');
+                            // alert('Success! Lead submitted.');
+                        } else {
+                            console.error('Webhook Failed (Proxy)', response.status, data);
+                            alert(`System Error: Webhook Failed.\nStatus: ${response.status}\nDetails: ${JSON.stringify(data)}`);
+                        }
+                    }).catch(err => {
+                        console.error('Webhook Network Error', err);
+                        alert(`Network Error: ${err.message}`);
+                    });
+                } else {
+                    alert('Configuration Error: Missing Webhook URL');
+                }
+            } catch (e: any) {
+                console.error('Submission Logic Error:', e);
+                alert(`Logic Error: ${e.message}`);
+            }
+
+            // Simulate AI Analysis Delay
+            setTimeout(() => {
+                const report = ReportGenerator.generate({
+                    breakdown,
+                    feasibility,
+                    inputs: {
+                        hasLand: hasLand === true,
+                        hasPlans: hasPlans === true,
+                        hasEngineering: hasEngineering === true,
+                        city, // Note: We use the raw city state, assuming marketData check passed
+                        name,
+                        targetSqFt: targetSqFt ?? 0
+                    }
+                });
+                setGeneratedReport(report);
+                setIsAnalyzing(false);
+            }, 2500);
+
+            // Data Capture
+            console.log("CAPTURED LEAD DATA:", payload);
+
+            // Scroll to results
+            setTimeout(() => {
+                document.getElementById('results-section')?.scrollIntoView({ behavior: 'smooth' });
+            }, 100);
+        } catch (fatalError: any) {
+            console.error("CRITICAL UI ERROR", fatalError);
+            alert(`CRITICAL ERROR: ${fatalError.message}`);
+        }
     }
 
     // Debounced Autocomplete
