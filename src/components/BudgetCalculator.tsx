@@ -9,6 +9,7 @@ import { getClientConfig, type ClientConfig } from '../config/clients';
 import { PixelService } from '../services/PixelService';
 
 import { ReportGenerator, type GeneratedReport } from '../services/ReportGenerator';
+import { LeadService } from '../services/LeadService';
 
 interface BudgetCalculatorProps {
     initialClient?: ClientConfig | null;
@@ -150,7 +151,7 @@ export const BudgetCalculator: React.FC<BudgetCalculatorProps> = ({ initialClien
             setIsQualified(qualified);
 
             // --- Generate Report Data & Sales Note ---
-            // We do this BEFORE submission so the sales note is included in the webhook
+            let salesNote = "Analysis Pending (Fallback)";
             const reportData = {
                 breakdown,
                 feasibility,
@@ -164,7 +165,12 @@ export const BudgetCalculator: React.FC<BudgetCalculatorProps> = ({ initialClien
                 }
             };
 
-            const salesNote = ReportGenerator.generateSalesNote(reportData);
+            try {
+                salesNote = ReportGenerator.generateSalesNote(reportData);
+            } catch (noteError) {
+                console.error("Sales Note Generation Failed:", noteError);
+                salesNote = "Error generating sales note.";
+            }
 
             // --- Construct Payload ---
             const payload = {
@@ -174,7 +180,7 @@ export const BudgetCalculator: React.FC<BudgetCalculatorProps> = ({ initialClien
                 is_qualified: qualified,
                 quality_tier: qualified ? 'Qualified' : 'NurtureOnly',
                 contact: { name, email, phone, agreedToTerms },
-                sales_note: salesNote, // Now populated synchronously
+                sales_note: salesNote,
                 project: {
                     city,
                     marketData,
@@ -189,20 +195,12 @@ export const BudgetCalculator: React.FC<BudgetCalculatorProps> = ({ initialClien
             };
 
             // --- Webhook Submission ---
-            // Fire and forget-ish, but with error logging. 
-            // We want to show results immediately regardless of webhook speed, 
-            // BUT we want to ensure it at least initiates.
+            console.log("Initiating Webhook Submission...", payload);
 
-            // NOTE: We await here to ensure we catch network errors, 
-            // but the user experience should feel snappy.
-
-            import('../services/LeadService').then(({ LeadService }) => {
-                LeadService.submitLead(client, payload as any).catch(err => {
-                    console.error("Background Webhook Failure:", err);
-                    // Optional: Retry logic or localized toast error? 
-                    // For now, we log it. The user gets their report regardless.
-                });
-            });
+            // Call LeadService directly (Static Import)
+            LeadService.submitLead(client, payload as any)
+                .then(success => console.log("Webhook Result:", success))
+                .catch(err => console.error("Webhook Background Failure:", err));
 
             // Track Lead
             if (qualified) {
