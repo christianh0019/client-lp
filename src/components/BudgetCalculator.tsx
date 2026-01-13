@@ -128,7 +128,7 @@ export const BudgetCalculator: React.FC<BudgetCalculatorProps> = ({ initialClien
     const handleModalSubmit = async () => {
         // SAFETY WRAPPER: Catch any synchronous error in logic
         try {
-            // alert('DEBUG: Button Click Registered');
+            alert('DEBUG: Button Click Registered');
 
             // 3. Final Validation (Contact Info)
             if (!name || !email || !phone) {
