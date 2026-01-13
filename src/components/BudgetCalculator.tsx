@@ -211,6 +211,11 @@ export const BudgetCalculator: React.FC<BudgetCalculatorProps> = ({ initialClien
                         payload: payload
                     })
                 }).then(async response => {
+                    const contentType = response.headers.get("content-type");
+                    if (contentType && contentType.includes("text/html")) {
+                        throw new Error("Proxy Routing Error: Received HTML instead of JSON. Vercel is serving the React App instead of the API.");
+                    }
+
                     // Try to parse JSON, fallback to text if HTML (e.g. 404/500 pages)
                     const text = await response.text();
                     let data;
