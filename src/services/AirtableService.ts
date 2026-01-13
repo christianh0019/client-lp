@@ -129,6 +129,6 @@ export class AirtableService {
             try { return JSON.stringify(value); } catch { return String(value); }
         }
 
-        return String(value);
+        return String(value).trim();
     }
 }

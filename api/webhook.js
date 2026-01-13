@@ -18,11 +18,15 @@ export default async function handler(req, res) {
         return res.status(405).json({ error: 'Method Not Allowed' });
     }
 
-    // 3. Parse Body
-    const { targetUrl, payload } = req.body;
+    // 3. Parse Body (Robust handling for Vercel/Node)
+    let body = req.body;
+    if (typeof body === 'string') {
+        try { body = JSON.parse(body); } catch (e) { return res.status(400).json({ error: 'Invalid JSON Body', raw: body }); }
+    }
+    const { targetUrl, payload } = body || {};
 
     if (!targetUrl) {
-        return res.status(400).json({ error: 'Missing targetUrl' });
+        return res.status(400).json({ error: 'Missing targetUrl', receivedBody: body });
     }
 
     try {
