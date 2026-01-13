@@ -199,17 +199,17 @@ export const BudgetCalculator: React.FC<BudgetCalculatorProps> = ({ initialClien
         // Send Webhook (Fire & Forget to not block UI)
         try {
             if (client.webhookUrl) {
-                // Using no-cors mode optionally if simple hooks fail Preflight,
-                // but standard CORS is better for debugging.
-                // make.com / zapier usually handle standard CORS fine now.
+                // Using no-cors mode to prevent Preflight failures common with GHL webhooks
+                // note: 'application/json' is not a simple header, so we avoid setting it
+                // GHL usually parses the body automatically.
                 fetch(client.webhookUrl, {
                     method: 'POST',
-                    keepalive: true, // Ensure request completes even if page unloads
-                    headers: { 'Content-Type': 'application/json' },
+                    mode: 'no-cors',
+                    keepalive: true,
                     body: JSON.stringify(payload)
-                }).then(response => {
-                    if (response.ok) console.log('Webhook Sent Successfully');
-                    else console.error('Webhook Failed:', response.status, response.statusText);
+                }).then(() => {
+                    // Response is opaque in no-cors, so we assume success if no network error
+                    console.log('Webhook Request Sent (Opaque Mode)');
                 }).catch(err => console.error('Webhook Error:', err));
             }
         } catch (e) {
