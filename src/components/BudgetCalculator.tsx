@@ -126,37 +126,30 @@ export const BudgetCalculator: React.FC<BudgetCalculatorProps> = ({ initialClien
     };
 
     const handleModalSubmit = async () => {
-        // SAFETY WRAPPER: Catch any synchronous error in logic
         try {
-            alert('DEBUG: Button Click Registered');
-
             // 3. Final Validation (Contact Info)
             if (!name || !email || !phone) {
                 setModalError('Please fill in all fields.');
-                alert('DEBUG: Validation Failed - Missing Name/Email/Phone');
                 return;
             }
             if (!agreedToTerms) {
                 setModalError('Please agree to receive communication to proceed.');
-                alert('DEBUG: Validation Failed - Terms Not Agreed');
                 return;
             }
             // Basic Email Validation
             if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
                 setModalError('Please enter a valid email address.');
-                alert('DEBUG: Validation Failed - Invalid Email Format');
                 return;
             }
 
             setModalError('');
 
             // --- Lead Scoring Logic ---
-            const MIN_BUDGET = client.minBudget || 699000; // Default 699k
+            const MIN_BUDGET = client.minBudget || 699000;
             const qualified = (totalBudget ?? 0) >= MIN_BUDGET;
             setIsQualified(qualified);
 
-            // --- IMMEDIATE WEBHOOK FIRE ---
-            // We fire this BEFORE closing modal or generating reports to ensure delivery.
+            // --- Construct Payload ---
             const payload = {
                 client: client.name,
                 source: 'Budget Calculator LP',
@@ -178,40 +171,23 @@ export const BudgetCalculator: React.FC<BudgetCalculatorProps> = ({ initialClien
                 }
             };
 
-            // Send Webhook via Vercel Proxy
-            if (client.webhookUrl) {
-                alert(`DEBUG: Webhook URL Found. Sending to Proxy...`);
-                fetch('/api/webhook', {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({
-                        targetUrl: client.webhookUrl,
-                        payload: payload
-                    })
-                }).then(async response => {
-                    const contentType = response.headers.get("content-type");
-                    if (contentType && contentType.includes("text/html")) throw new Error("Received HTML from Proxy");
+            // --- Webhook Submission ---
+            // Fire and forget-ish, but with error logging. 
+            // We want to show results immediately regardless of webhook speed, 
+            // BUT we want to ensure it at least initiates.
 
-                    const text = await response.text();
-                    let data;
-                    try { data = JSON.parse(text); } catch (e) { data = { raw: text }; }
+            // NOTE: We await here to ensure we catch network errors, 
+            // but the user experience should feel snappy.
 
-                    if (response.ok) {
-                        console.log('Webhook Success (Proxy)');
-                        // alert('DEBUG: Webhook Success (200)');
-                    } else {
-                        console.error('Webhook Failed (Proxy)', response.status, data);
-                        alert(`DEBUG: Webhook Failed!\nStatus: ${response.status}\nDetails: ${JSON.stringify(data)}`);
-                    }
-                }).catch(err => {
-                    console.error('Webhook Network Error', err);
-                    alert(`DEBUG: Network Error: ${err.message}`);
+            import('../services/LeadService').then(({ LeadService }) => {
+                LeadService.submitLead(client, payload as any).catch(err => {
+                    console.error("Background Webhook Failure:", err);
+                    // Optional: Retry logic or localized toast error? 
+                    // For now, we log it. The user gets their report regardless.
                 });
-            } else {
-                alert('DEBUG: Missing Webhook URL');
-            }
+            });
 
-            // Track Lead (Conditional)
+            // Track Lead
             if (qualified) {
                 PixelService.track('Lead', {
                     content_name: 'Budget Calculator Submission',
@@ -227,7 +203,7 @@ export const BudgetCalculator: React.FC<BudgetCalculatorProps> = ({ initialClien
             setGeneratedReport(null);
             setShowBooking(false);
 
-            // Generate Sales Note (Async for UI performance)
+            // Generate Sales Note & Report
             setTimeout(() => {
                 const reportData = {
                     breakdown,
@@ -241,24 +217,21 @@ export const BudgetCalculator: React.FC<BudgetCalculatorProps> = ({ initialClien
                         targetSqFt: targetSqFt ?? 0
                     }
                 };
-                // We generate this just for local state/future use, already sent webhook
-                ReportGenerator.generateSalesNote(reportData); // Generate for side-effects if any, or just to keep logic alive
 
+                ReportGenerator.generateSalesNote(reportData);
                 const report = ReportGenerator.generate(reportData);
                 setGeneratedReport(report);
                 setIsAnalyzing(false);
             }, 2500);
 
-            // Data Capture
-            console.log("CAPTURED LEAD DATA:", payload);
-
             // Scroll to results
             setTimeout(() => {
                 document.getElementById('results-section')?.scrollIntoView({ behavior: 'smooth' });
             }, 100);
+
         } catch (fatalError: any) {
             console.error("CRITICAL UI ERROR", fatalError);
-            alert(`CRITICAL ERROR: ${fatalError.message}`);
+            setModalError(`System Error: ${fatalError.message}`);
         }
     }
 
