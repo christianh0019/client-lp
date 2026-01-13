@@ -196,23 +196,45 @@ export const BudgetCalculator: React.FC<BudgetCalculatorProps> = ({ initialClien
             }
         };
 
-        // Send Webhook (Fire & Forget to not block UI)
+        // Send Webhook via Vercel Proxy (Solves CORS)
         try {
             if (client.webhookUrl) {
-                // Legacy Method: Direct Fetch
-                // This matches the implementation from commit 32e9751 (Jan 8)
-                fetch(client.webhookUrl, {
+                // console.log('Sending webhook via proxy to:', client.webhookUrl);
+
+                fetch('/api/webhook', {
                     method: 'POST',
-                    keepalive: true, // Ensure request completes even if page unloads
                     headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify(payload)
-                }).then(response => {
-                    if (response.ok) console.log('Webhook Sent Successfully');
-                    else console.error('Webhook Failed:', response.status, response.statusText);
-                }).catch(err => console.error('Webhook Error:', err));
+                    body: JSON.stringify({
+                        targetUrl: client.webhookUrl,
+                        payload: payload
+                    })
+                }).then(async response => {
+                    const contentType = response.headers.get("content-type");
+                    if (contentType && contentType.includes("text/html")) {
+                        throw new Error("Received HTML from Proxy. Possible Routing Error.");
+                    }
+
+                    const text = await response.text();
+                    let data;
+                    try { data = JSON.parse(text); } catch (e) { data = { raw: text }; }
+
+                    if (response.ok) {
+                        console.log('Webhook Success (Proxy)');
+                        // alert('Success! Lead submitted.'); 
+                    } else {
+                        console.error('Webhook Failed (Proxy)', response.status, data);
+                        alert(`System Error: Webhook Failed.\nStatus: ${response.status}\nDetails: ${JSON.stringify(data)}`);
+                    }
+                }).catch(err => {
+                    console.error('Webhook Network Error', err);
+                    alert(`Network Error: ${err.message}`);
+                });
+            } else {
+                alert('Configuration Error: Missing Webhook URL');
             }
-        } catch (e) {
-            console.error('Submission Error:', e);
+        } catch (e: any) {
+            console.error('Submission Logic Error:', e);
+            alert(`Logic Error: ${e.message}`);
         }
 
         // Simulate AI Analysis Delay
