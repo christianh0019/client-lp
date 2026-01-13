@@ -196,36 +196,32 @@ export const BudgetCalculator: React.FC<BudgetCalculatorProps> = ({ initialClien
             }
         };
 
-        // Send Webhook (Fire & Forget to not block UI)
+        // Send Webhook via Vercel Proxy (Solves CORS)
         try {
             if (client.webhookUrl) {
-                // DEBUG: Alerting to trace execution
-                // alert(`Sending webhook to: ${client.webhookUrl}`);
+                console.log('Sending webhook via proxy...');
 
-                // Revert to Standard CORS for debugging to see real error in console
-                fetch(client.webhookUrl, {
+                fetch('/api/webhook', {
                     method: 'POST',
-                    keepalive: true,
                     headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify(payload)
-                }).then(response => {
+                    body: JSON.stringify({
+                        targetUrl: client.webhookUrl,
+                        payload: payload
+                    })
+                }).then(async response => {
+                    const data = await response.json().catch(() => ({}));
                     if (response.ok) {
-                        console.log('Webhook Success');
-                        // alert('Webhook Success!');
+                        console.log('Webhook Success (Proxy)');
                     } else {
-                        console.error('Webhook Failed', response.status);
-                        // alert(`Webhook Failed: ${response.status}`);
+                        console.error('Webhook Failed (Proxy)', response.status, data);
+                        // Optional: alert(`Error: ${data.error || 'Connection Failed'}`);
                     }
                 }).catch(err => {
-                    console.error('Webhook Error', err);
-                    // alert(`Webhook Error: ${err.message}`);
+                    console.error('Webhook Network Error', err);
                 });
-            } else {
-                // alert('No Webhook URL found for client');
             }
         } catch (e) {
-            console.error('Submission Error:', e);
-            // alert(`Submission Logic Error: ${e}`);
+            console.error('Submission Logic Error:', e);
         }
 
         // Simulate AI Analysis Delay
