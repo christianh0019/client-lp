@@ -32,16 +32,11 @@ export class LeadService {
         }
 
         if (!url) {
-            alert("DEBUG ERROR: No Webhook URL found for this client!");
             console.warn("LeadService: No Webhook URL configured for client", client.name);
             return false;
         }
 
         try {
-            // EXPLICIT DEBUG START
-            const confirmed = window.confirm(`DEBUG: Ready to send webhook to:\n${url}\n\nClick OK to execute.`);
-            if (!confirmed) return false;
-
             console.log("LeadService: Submitting lead DIRECTLY (No Proxy)...", { client: client.name, url });
 
             // Direct Browser Submission
@@ -55,7 +50,6 @@ export class LeadService {
 
             if (!response.ok) {
                 const errorText = await response.text();
-                alert(`DEBUG ERROR: Webhook Failed!\nStatus: ${response.status}\nResponse: ${errorText}`);
                 console.error(`LeadService: Direct Submission Failed [${response.status}]`, errorText);
                 throw new Error(`Webhook responded with ${response.status}: ${errorText}`);
             }
@@ -68,12 +62,10 @@ export class LeadService {
                 data = await response.text();
             }
 
-            alert(`DEBUG SUCCESS: Webhook Sent!\nResponse: ${JSON.stringify(data)}`);
             console.log("LeadService: Direct Submission Successful", data);
             return true;
 
         } catch (error: any) {
-            alert(`DEBUG EXCEPTION: Network/CORS Error.\n${error.message}`);
             console.error("LeadService: Direct Submission Network/CORS Error", error);
             throw error;
         }
