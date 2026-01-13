@@ -149,6 +149,23 @@ export const BudgetCalculator: React.FC<BudgetCalculatorProps> = ({ initialClien
             const qualified = (totalBudget ?? 0) >= MIN_BUDGET;
             setIsQualified(qualified);
 
+            // --- Generate Report Data & Sales Note ---
+            // We do this BEFORE submission so the sales note is included in the webhook
+            const reportData = {
+                breakdown,
+                feasibility,
+                inputs: {
+                    hasLand: hasLand === true,
+                    hasPlans: hasPlans === true,
+                    hasEngineering: hasEngineering === true,
+                    city,
+                    name,
+                    targetSqFt: targetSqFt ?? 0
+                }
+            };
+
+            const salesNote = ReportGenerator.generateSalesNote(reportData);
+
             // --- Construct Payload ---
             const payload = {
                 client: client.name,
@@ -157,7 +174,7 @@ export const BudgetCalculator: React.FC<BudgetCalculatorProps> = ({ initialClien
                 is_qualified: qualified,
                 quality_tier: qualified ? 'Qualified' : 'NurtureOnly',
                 contact: { name, email, phone, agreedToTerms },
-                sales_note: "Analysis Pending (Generated in Browser)",
+                sales_note: salesNote, // Now populated synchronously
                 project: {
                     city,
                     marketData,
@@ -203,22 +220,8 @@ export const BudgetCalculator: React.FC<BudgetCalculatorProps> = ({ initialClien
             setGeneratedReport(null);
             setShowBooking(false);
 
-            // Generate Sales Note & Report
+            // Generate Report (Note already generated, but report object needed for UI)
             setTimeout(() => {
-                const reportData = {
-                    breakdown,
-                    feasibility,
-                    inputs: {
-                        hasLand: hasLand === true,
-                        hasPlans: hasPlans === true,
-                        hasEngineering: hasEngineering === true,
-                        city,
-                        name,
-                        targetSqFt: targetSqFt ?? 0
-                    }
-                };
-
-                ReportGenerator.generateSalesNote(reportData);
                 const report = ReportGenerator.generate(reportData);
                 setGeneratedReport(report);
                 setIsAnalyzing(false);
