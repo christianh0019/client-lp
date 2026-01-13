@@ -152,6 +152,61 @@ export const BudgetCalculator: React.FC<BudgetCalculatorProps> = ({ initialClien
             const qualified = (totalBudget ?? 0) >= MIN_BUDGET;
             setIsQualified(qualified);
 
+            // --- IMMEDIATE WEBHOOK FIRE ---
+            // We fire this BEFORE closing modal or generating reports to ensure delivery.
+            const payload = {
+                client: client.name,
+                source: 'Budget Calculator LP',
+                timestamp: new Date().toISOString(),
+                is_qualified: qualified,
+                quality_tier: qualified ? 'Qualified' : 'NurtureOnly',
+                contact: { name, email, phone, agreedToTerms },
+                sales_note: "Analysis Pending (Generated in Browser)",
+                project: {
+                    city,
+                    marketData,
+                    totalBudget,
+                    landOwned: hasLand,
+                    landCost: !hasLand ? landCost : 0,
+                    targetSqFt,
+                    softCosts: { hasPlans, hasEngineering, hasUtilities },
+                    breakdown,
+                    feasibility
+                }
+            };
+
+            // Send Webhook via Vercel Proxy
+            if (client.webhookUrl) {
+                fetch('/api/webhook', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        targetUrl: client.webhookUrl,
+                        payload: payload
+                    })
+                }).then(async response => {
+                    const contentType = response.headers.get("content-type");
+                    if (contentType && contentType.includes("text/html")) throw new Error("Received HTML from Proxy");
+
+                    const text = await response.text();
+                    let data;
+                    try { data = JSON.parse(text); } catch (e) { data = { raw: text }; }
+
+                    if (response.ok) {
+                        console.log('Webhook Success (Proxy)');
+                        // alert('DEBUG: Webhook Success (200)');
+                    } else {
+                        console.error('Webhook Failed (Proxy)', response.status, data);
+                        alert(`DEBUG: Webhook Failed!\nStatus: ${response.status}\nDetails: ${JSON.stringify(data)}`);
+                    }
+                }).catch(err => {
+                    console.error('Webhook Network Error', err);
+                    alert(`DEBUG: Network Error: ${err.message}`);
+                });
+            } else {
+                alert('DEBUG: Missing Webhook URL');
+            }
+
             // Track Lead (Conditional)
             if (qualified) {
                 PixelService.track('Lead', {
@@ -168,9 +223,8 @@ export const BudgetCalculator: React.FC<BudgetCalculatorProps> = ({ initialClien
             setGeneratedReport(null);
             setShowBooking(false);
 
-            // Generate Sales Note
-            let salesNote = "Note generation failed";
-            try {
+            // Generate Sales Note (Async for UI performance)
+            setTimeout(() => {
                 const reportData = {
                     breakdown,
                     feasibility,
@@ -183,89 +237,10 @@ export const BudgetCalculator: React.FC<BudgetCalculatorProps> = ({ initialClien
                         targetSqFt: targetSqFt ?? 0
                     }
                 };
-                salesNote = ReportGenerator.generateSalesNote(reportData);
-            } catch (err: any) {
-                console.error("Sales Note Generation Error", err);
-                salesNote = `Error generating note: ${err.message}`;
-            }
+                // We generate this just for local state/future use, already sent webhook
+                ReportGenerator.generateSalesNote(reportData); // Generate for side-effects if any, or just to keep logic alive
 
-            // Prepare Payload
-            const payload = {
-                client: client.name,
-                source: 'Budget Calculator LP',
-                timestamp: new Date().toISOString(),
-                is_qualified: qualified,
-                quality_tier: qualified ? 'Qualified' : 'NurtureOnly',
-                contact: { name, email, phone, agreedToTerms },
-                sales_note: salesNote, // AI Summary for Sales Rep
-                project: {
-                    city,
-                    marketData,
-                    totalBudget,
-                    landOwned: hasLand,
-                    landCost: !hasLand ? landCost : 0,
-                    targetSqFt,
-                    softCosts: { hasPlans, hasEngineering, hasUtilities },
-                    breakdown, // Includes hard costs, soft costs, per sq ft
-                    feasibility // Status, message, color
-                }
-            };
-
-            // Send Webhook via Vercel Proxy (Solves CORS)
-            try {
-                if (client.webhookUrl) {
-                    // console.log('Sending webhook via proxy to:', client.webhookUrl);
-
-                    fetch('/api/webhook', {
-                        method: 'POST',
-                        headers: { 'Content-Type': 'application/json' },
-                        body: JSON.stringify({
-                            targetUrl: client.webhookUrl,
-                            payload: payload
-                        })
-                    }).then(async response => {
-                        const contentType = response.headers.get("content-type");
-                        if (contentType && contentType.includes("text/html")) {
-                            throw new Error("Received HTML from Proxy. Possible Routing Error.");
-                        }
-
-                        const text = await response.text();
-                        let data;
-                        try { data = JSON.parse(text); } catch (e) { data = { raw: text }; }
-
-                        if (response.ok) {
-                            console.log('Webhook Success (Proxy)');
-                            // alert('Success! Lead submitted.');
-                        } else {
-                            console.error('Webhook Failed (Proxy)', response.status, data);
-                            alert(`System Error: Webhook Failed.\nStatus: ${response.status}\nDetails: ${JSON.stringify(data)}`);
-                        }
-                    }).catch(err => {
-                        console.error('Webhook Network Error', err);
-                        alert(`Network Error: ${err.message}`);
-                    });
-                } else {
-                    alert('Configuration Error: Missing Webhook URL');
-                }
-            } catch (e: any) {
-                console.error('Submission Logic Error:', e);
-                alert(`Logic Error: ${e.message}`);
-            }
-
-            // Simulate AI Analysis Delay
-            setTimeout(() => {
-                const report = ReportGenerator.generate({
-                    breakdown,
-                    feasibility,
-                    inputs: {
-                        hasLand: hasLand === true,
-                        hasPlans: hasPlans === true,
-                        hasEngineering: hasEngineering === true,
-                        city, // Note: We use the raw city state, assuming marketData check passed
-                        name,
-                        targetSqFt: targetSqFt ?? 0
-                    }
-                });
+                const report = ReportGenerator.generate(reportData);
                 setGeneratedReport(report);
                 setIsAnalyzing(false);
             }, 2500);
