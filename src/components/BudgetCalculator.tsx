@@ -133,15 +133,18 @@ export const BudgetCalculator: React.FC<BudgetCalculatorProps> = ({ initialClien
             // 3. Final Validation (Contact Info)
             if (!name || !email || !phone) {
                 setModalError('Please fill in all fields.');
+                alert('DEBUG: Validation Failed - Missing Name/Email/Phone');
                 return;
             }
             if (!agreedToTerms) {
                 setModalError('Please agree to receive communication to proceed.');
+                alert('DEBUG: Validation Failed - Terms Not Agreed');
                 return;
             }
             // Basic Email Validation
             if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
                 setModalError('Please enter a valid email address.');
+                alert('DEBUG: Validation Failed - Invalid Email Format');
                 return;
             }
 
@@ -177,6 +180,7 @@ export const BudgetCalculator: React.FC<BudgetCalculatorProps> = ({ initialClien
 
             // Send Webhook via Vercel Proxy
             if (client.webhookUrl) {
+                alert(`DEBUG: Webhook URL Found. Sending to Proxy...`);
                 fetch('/api/webhook', {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
