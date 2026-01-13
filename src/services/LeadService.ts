@@ -32,15 +32,19 @@ export class LeadService {
         }
 
         if (!url) {
+            alert("DEBUG ERROR: No Webhook URL found for this client!");
             console.warn("LeadService: No Webhook URL configured for client", client.name);
             return false;
         }
 
         try {
+            // EXPLICIT DEBUG START
+            const confirmed = window.confirm(`DEBUG: Ready to send webhook to:\n${url}\n\nClick OK to execute.`);
+            if (!confirmed) return false;
+
             console.log("LeadService: Submitting lead DIRECTLY (No Proxy)...", { client: client.name, url });
 
             // Direct Browser Submission
-            // NOTE: This relies on the destination server supporting CORS for application/json
             const response = await fetch(url, {
                 method: 'POST',
                 headers: {
@@ -50,14 +54,12 @@ export class LeadService {
             });
 
             if (!response.ok) {
-                // Clone response to read text without consuming the stream if we needed it elsewhere, 
-                // but here we just need to log it.
                 const errorText = await response.text();
+                alert(`DEBUG ERROR: Webhook Failed!\nStatus: ${response.status}\nResponse: ${errorText}`);
                 console.error(`LeadService: Direct Submission Failed [${response.status}]`, errorText);
                 throw new Error(`Webhook responded with ${response.status}: ${errorText}`);
             }
 
-            // Some webhooks (like Zapier/Make) might return simple text, not JSON. Checks added.
             const contentType = response.headers.get("content-type");
             let data;
             if (contentType && contentType.indexOf("application/json") !== -1) {
@@ -66,12 +68,13 @@ export class LeadService {
                 data = await response.text();
             }
 
+            alert(`DEBUG SUCCESS: Webhook Sent!\nResponse: ${JSON.stringify(data)}`);
             console.log("LeadService: Direct Submission Successful", data);
             return true;
 
-        } catch (error) {
+        } catch (error: any) {
+            alert(`DEBUG EXCEPTION: Network/CORS Error.\n${error.message}`);
             console.error("LeadService: Direct Submission Network/CORS Error", error);
-            // We re-throw to allow UI to show error if needed, or return false
             throw error;
         }
     }
